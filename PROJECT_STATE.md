@@ -1,9 +1,9 @@
 # IIOS Project State
 
-**Version:** 1.2.0  
+**Version:** 1.2.1
 **Review date:** 22 July 2026  
 **Phase:** 0 — Foundation  
-**Status:** Cowork audit completed; corrective patch prepared; awaiting Owner ratification.
+**Status:** Foundation v1.2.0 ratified by Owner and merged to `main`. v1.2.1 is a technical portability patch (cross-platform Invariant Kernel checksum, `.gitattributes`, Windows+Ubuntu CI) with no change to ratified constitutional content.
 
 ## Approved design direction proposed for ratification
 
@@ -25,10 +25,10 @@ Ratify Foundation v1.2.0, merge through a protected pull request and verify repo
 
 ## Foundation acceptance criteria
 
-- [ ] Owner ratifies Master Charter and Constitution.
-- [ ] Owner ratifies ADR-0007, ADR-0008 and ADR-0009.
-- [ ] Cowork write-capable connectors are disabled or explicitly restricted to read-only.
-- [ ] `python scripts/verify_foundation.py` passes locally and in GitHub Actions.
+- [x] Owner ratifies Master Charter and Constitution.
+- [x] Owner ratifies ADR-0007, ADR-0008 and ADR-0009.
+- [x] Cowork write-capable connectors are disabled or explicitly restricted to read-only.
+- [x] `python scripts/verify_foundation.py` passes locally and in GitHub Actions, on both Ubuntu and Windows (v1.2.1).
 - [ ] Main branch protection requires the verification workflow.
 - [ ] No unresolved Critical finding remains.
 - [ ] Action classes and approval rules are accepted.
