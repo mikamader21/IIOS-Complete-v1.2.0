@@ -15,11 +15,16 @@ required = [
     ".github/workflows/verify-foundation.yml",
     "governance/invariant-kernel/invariants.json",
     "governance/invariant-kernel/manifest.json",
+    ".gitattributes",
 ]
 errors = []
 for rel in required:
     if not (root / rel).exists():
         errors.append(f"missing: {rel}")
+
+gitattributes = (root / ".gitattributes").read_text(encoding="utf-8") if (root / ".gitattributes").exists() else ""
+if not re.search(r"^governance/invariant-kernel/\*\.json\s+text\s+eol=lf\s*$", gitattributes, flags=re.M):
+    errors.append(".gitattributes missing explicit eol=lf rule for governance/invariant-kernel/*.json")
 
 if (root / ".hermes.md").exists() or (root / "HERMES.md").exists():
     errors.append("root Hermes context overrides AGENTS.md")
