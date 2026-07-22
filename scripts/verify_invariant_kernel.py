@@ -36,7 +36,15 @@ else:
     if len(ids) != len(set(ids)):
         errors.append("invariant IDs must be unique")
 
-actual = hashlib.sha256(policy_path.read_bytes()).hexdigest()
+def canonical_text_bytes(path: Path) -> bytes:
+    # Line endings are not part of the Invariant Kernel's constitutional
+    # semantics; normalize CRLF/CR to LF so the hash is stable across
+    # platforms (Windows checkout vs. Linux/CI) regardless of core.autocrlf.
+    raw = path.read_bytes()
+    return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+actual = hashlib.sha256(canonical_text_bytes(policy_path)).hexdigest()
 expected = manifest.get("sha256")
 if actual != expected:
     errors.append(f"checksum mismatch: expected {expected}, got {actual}")
