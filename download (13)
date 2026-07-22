@@ -1,0 +1,27 @@
+---
+name: example-skill
+version: 0.1.0
+status: draft
+owner: unassigned
+risk: low
+---
+
+# Purpose
+
+# Inputs / Outputs
+
+# Preconditions
+
+# Allowed tools and permissions
+
+# Procedure
+
+# Validation
+
+# Error, retry, time and cost limits
+
+# Security and data classification
+
+# Tests
+
+# Rollback

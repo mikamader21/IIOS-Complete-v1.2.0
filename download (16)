@@ -1,0 +1,6 @@
+.obsidian/
+_Generated/
+.attachments/
+*.key
+*.pem
+.env*

@@ -1,0 +1,9 @@
+{
+  "manifest_version": "1.0.0",
+  "kernel_policy": "invariants.json",
+  "sha256": "400105f55056b6914cc2740e418e3613cb808f7e20910c2219f1ae42b4c29b63",
+  "ratification_status": "pending_owner",
+  "ratified_by": null,
+  "ratified_at": null,
+  "notes": "Checksum detects changes; authenticity still depends on protected Git controls and Owner ratification."
+}

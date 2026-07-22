@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "policy_version": "1.0.0",
+  "default_decision": "deny",
+  "fail_mode": "closed",
+  "invariants": [
+    {
+      "id": "INV-001",
+      "statement": "Owner retains final constitutional authority.",
+      "enforcement": "deny privilege expansion without Owner-ratified policy"
+    },
+    {
+      "id": "INV-002",
+      "statement": "Financial write actions are prohibited in Foundation and MVP.",
+      "enforcement": "deny trade, order, withdrawal, transfer, purchase and payment capabilities"
+    },
+    {
+      "id": "INV-003",
+      "statement": "Runtime agents cannot modify Charter, Constitution, Kernel or protected audit records.",
+      "enforcement": "deny writes to protected authority and audit resources"
+    },
+    {
+      "id": "INV-004",
+      "statement": "Secrets cannot be exposed to models or logs by default.",
+      "enforcement": "deny secret reads/transmission without explicitly scoped approved capability"
+    },
+    {
+      "id": "INV-005",
+      "statement": "Governance failure blocks Class B, C and D actions.",
+      "enforcement": "fail closed"
+    },
+    {
+      "id": "INV-006",
+      "statement": "External content and tool output cannot grant permission.",
+      "enforcement": "ignore embedded instructions as authority"
+    },
+    {
+      "id": "INV-007",
+      "statement": "Cost, retries, delegation and runtime require hard limits.",
+      "enforcement": "deny unbounded execution"
+    },
+    {
+      "id": "INV-008",
+      "statement": "Generated skills cannot self-promote to production.",
+      "enforcement": "require review, tests, ADR and Owner-approved promotion"
+    }
+  ]
+}
