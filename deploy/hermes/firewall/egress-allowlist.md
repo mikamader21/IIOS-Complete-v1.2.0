@@ -1,6 +1,6 @@
 # Hermes egress allowlist
 
-Default-deny outbound. This table is the source of truth `firewall/apply-ufw-rules.sh` implements; if the two ever disagree, this document wins and the script must be updated to match.
+This table is the source of truth `firewall/apply-ufw-rules.sh` implements when run with `--apply-egress`; if the two ever disagree, this document wins and the script must be updated to match. **As shipped, the script does not restrict outbound traffic by default** — `--apply-egress` is required in addition to `--apply`, and both require running during an authorized VPS change window (`apply-ufw-rules.sh`'s own warning banner). Inbound default-deny-plus-explicit-allow is the only change the script makes without `--apply-egress`.
 
 | Destination | Port/proto | Purpose | Always-on? |
 |---|---|---|---|

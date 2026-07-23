@@ -55,3 +55,101 @@ jobs:
         run: python -m mypy src tests
       - name: Governance test suite (pytest + coverage)
         run: python -m pytest tests/governance --cov=iios_governance --cov-report=term-missing -q
+
+  hermes-deployment-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Foundation verifier (required files, JSON validity, secret scan)
+        run: python scripts/verify_foundation.py
+      - name: Shell syntax check (bash -n)
+        run: |
+          set -euo pipefail
+          find deploy/hermes -name '*.sh' -print0 | xargs -0 -n1 bash -n
+      - name: ShellCheck
+        run: |
+          set -euo pipefail
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            echo "shellcheck not present on this runner image — this is a real limitation, not a skip by choice." >&2
+            exit 1
+          fi
+          find deploy/hermes -name '*.sh' -print0 | xargs -0 shellcheck
+      - name: Stage unit-referenced user/paths on the ephemeral CI runner
+        run: |
+          set -euo pipefail
+          # systemd-analyze verify resolves User=/Group= and ExecStart=
+          # against the real system, so validating the templates as
+          # written requires them to exist somewhere. This creates the
+          # `hermes` system account and stub copies of the referenced
+          # scripts ONLY on this disposable GitHub Actions VM, which is
+          # destroyed at the end of the job — it does not touch, provision,
+          # or resemble any real, Owner-controlled VPS, and it does not
+          # install Hermes Agent itself (no `hermes` CLI is fetched or
+          # run). This is package validation, not infrastructure change.
+          sudo useradd --system --no-create-home --shell /usr/sbin/nologin hermes
+          sudo mkdir -p /opt/hermes/core/compose/scripts /opt/hermes/backups /opt/hermes/logs /opt/hermes/profiles
+          sudo cp deploy/hermes/scripts/run-backup.sh deploy/hermes/scripts/run-healthcheck.sh /opt/hermes/core/compose/scripts/
+          sudo chmod +x /opt/hermes/core/compose/scripts/*.sh
+          sudo chown -R hermes:hermes /opt/hermes
+      - name: systemd-analyze verify
+        run: |
+          set -euo pipefail
+          for unit in deploy/hermes/systemd/*.service deploy/hermes/systemd/*.timer; do
+            echo "verifying $unit"
+            systemd-analyze verify --recursive-errors=yes "$unit"
+          done
+      - name: Line-ending check (LF-only for service/timer/template/example)
+        run: |
+          python3 - <<'PY'
+          import pathlib, sys
+          bad = []
+          for p in pathlib.Path("deploy/hermes").rglob("*"):
+              if p.is_file() and p.suffix in (".service", ".timer", ".template", ".example"):
+                  if b"\r\n" in p.read_bytes():
+                      bad.append(str(p))
+          if bad:
+              print("CRLF found in:", *bad, sep="\n  ")
+              sys.exit(1)
+          print("All service/timer/template/example files are LF-only.")
+          PY
+      - name: No real credential shape in templates
+        # The vendor-specific key-prefix patterns scripts/verify_foundation.py
+        # already checks for (see that script's secret-scan regex) are
+        # covered by the Foundation verifier step above, which scans the
+        # whole repository including deploy/hermes/ — not repeated here as
+        # literal text, since writing those exact prefixes into this file
+        # would itself trip that same repo-wide scanner.
+        run: |
+          set -euo pipefail
+          if grep -rnEi '(api[_-]?key[[:space:]]*=[[:space:]]*[^<[:space:]<]|[A-Za-z0-9_-]{40,})' deploy/hermes --include=*.template --include=*.example --include=*.json; then
+            echo "Possible real credential shape found in a template/example/manifest file." >&2
+            exit 1
+          fi
+          echo "No credential-shaped strings found."
+      - name: ict-trading profile forbids financial execution
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          manifest = json.load(open("deploy/hermes/profiles/ict-trading.profile.json"))
+          prohibited = set(manifest["data_scope"]["prohibited"])
+          allowed = set(manifest["data_scope"]["allowed"])
+          required_prohibited = {
+              "order_placement", "order_modification", "order_cancellation",
+              "withdrawal", "deposit", "capital_transfer",
+          }
+          missing = required_prohibited - prohibited
+          overlap = allowed & required_prohibited
+          if missing or overlap:
+              print("missing from prohibited:", missing)
+              print("present in both allowed and prohibited:", overlap)
+              sys.exit(1)
+          if manifest["governance"]["standing_capability"] != "none":
+              print("ict-trading must not carry a standing capability")
+              sys.exit(1)
+          print("ict-trading profile manifest forbids financial execution as required.")
+          PY

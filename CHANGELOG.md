@@ -9,10 +9,14 @@
 - Added a "Hermes VPS deployment package (HERMES-DEP-001)" section to `docs/14_ACCEPTANCE_TESTS.md`.
 - Noted the design package's existence in `docs/TOOL_REGISTRY.md`'s Hermes entry (`deployment_package` field) without changing its `status: not integrated`.
 - **No real VPS was provisioned, connected to, or modified. No script under `deploy/hermes/` was executed. No real secret, API key, or credential was created, requested, or stored.** Hermes remains not integrated; the `ict-trading` profile has no live connection to any account or data provider.
+
+**Pre-merge audit corrections (same task, before merge):** the Owner required auditing this package against the real `NousResearch/hermes-agent` product (v0.19.0, 2026-07-20, consulted 2026-07-23) instead of relying on this repository's own general infrastructure docs. Corrections: removed the fabricated `hermes-worker.service` (no such process/subcommand exists upstream) and the `hermes-gateway.service` wrapping `docker compose up/down` (duplicated Docker's own `restart: unless-stopped` supervision); added a real, pinned `deploy/hermes/core/docker-compose.yml.template` and `compose.env.example`; corrected `terminal.home_mode` from the invented `profile_scoped` to the real value `profile`; reversed `terminal.backend` for `ict-trading` from `docker` to `local` to avoid a `docker.sock` mount; reframed `ict-trading.profile.json` as an explicit IIOS deployment manifest and added `ict-trading.config.yaml.template` as its real-format counterpart; rewrote `run-backup.sh` to call the official `hermes backup` command instead of a raw `tar`; rewrote `run-healthcheck.sh` to use `hermes doctor`/`hermes gateway status` plus host disk/memory/restart-loop checks; rewrote `apply-ufw-rules.sh` to be dry-run by default, requiring `--apply`/`--apply-egress`, with a pre-flight SSH-source check and an `at`-based rollback safety net, and removed an `eval`-based dispatch in favor of real argument arrays; set the executable bit on every `.sh` file (previously `100644`); added `*.example` to `.gitattributes`' LF rules; added a `hermes-deployment-tests` CI job (`bash -n`, ShellCheck, `systemd-analyze verify` against a `hermes` user/stub scripts staged only on the disposable CI runner, line-ending and credential-shape checks, and a structural check that the `ict-trading` manifest forbids financial execution). Full list: `docs/31_HERMES_DEPLOYMENT_PACKAGE.md` — "Corrections after upstream audit"; ADR amendment: `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md`. ADR-0013 remains **Proposed**. No real VPS was touched during the audit or its fixes.
 - Status:
   ```text
   Hermes VPS deployment package: in review
-  Hermes runtime integration: not started
+  VPS installation: not authorized
+  Hermes runtime: not installed
+  ict-trading profile: specified, not activated
   ```
 
 ## Unreleased — Governance Core implementation skeleton (GOV-IMP-001) — merged
