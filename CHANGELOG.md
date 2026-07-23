@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased — Hermes topology reconciliation and release-pin verification (pre-HERMES-INSTALL-001)
+
+Owner-directed reconciliation ("FINAL UPSTREAM RECONCILIATION — BEFORE HERMES VPS INSTALLATION", 23 July 2026), performed on `main` after `HERMES-DEP-001` merged (PR #10, `fff907f`), before any real VPS action. The Owner authorized VPS purchase and preparation for installation as part of this instruction — this change does not itself connect to or install anything on a real VPS.
+
+- **Re-verified the upstream release pin** against three independent official sources (GitHub releases page marked Latest, GitHub tags page, GitHub commit API with GPG signature verification) plus Docker Hub's own tag listing: Hermes Agent v0.19.0, tag `v2026.7.20`, commit `3ef6bbd201263d354fd83ec55b3c306ded2eb72a` (Teknium, Nous Research), Docker image `nousresearch/hermes-agent@sha256:a6ce64e2038867885c2c90f6602425e6e70293d5e6d952a0e603a99265e01c40` (linux/amd64; arm64 digest also recorded). Confirmed the Owner's own "v0.18.2 appears latest" observation was a stale/pre-propagation read — the release commit's own diff bumps the product's internal version string from 0.18.2 to 0.19.0, proving 0.18.2 was the immediately prior release, not a currently-latest one.
+- **Corrected the deployment topology** from one container per profile to **one official Hermes container hosting multiple s6-supervised profiles**, matching the official documentation's own current recommendation ("the recommended deployment is one container hosting all profiles") — the one-container-per-profile pattern this repo had adopted was the product's pre-s6-migration pattern, superseded upstream.
+- Updated `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` with the verified pin, the corrected topology, a "Real isolation boundaries" table stating plainly that co-located-profile separation is application-layer only (not OS/container-layer), and a "Future dedicated-container option" section for high-risk profiles — then changed its status to **Ratified** ("Ratified by Owner for controlled VPS deployment preparation. This ratification does not authorize financial execution or unrestricted agent activation.").
+- Rewrote `deploy/hermes/core/docker-compose.yml.template` (pinned by digest, single service, no published ports by default, native `healthcheck:` block, `shm_size`) and added `deploy/hermes/core/compose.env.example`'s companion note explaining the three-file secret model doesn't change, only the shared-volume path.
+- Updated `deploy/hermes/profiles/onyx/onyx.profile.json` and `ict-trading.profile.json`/`.config.yaml.template` for the shared-volume path convention (`/opt/data/profiles/<name>/`), flagging the exact `HERMES_HOME` resolution for named profiles as not independently confirmed pending a real `hermes profile create` run.
+- Rewrote `run-backup.sh` to a plain host-level tar of the single shared `/opt/hermes/data` volume (removing the `docker` group requirement for backups entirely — the earlier per-profile-container design needed `docker exec`, this one doesn't) and `run-healthcheck.sh` to loop `hermes profile list` / `hermes -p <name> gateway status` over whatever profiles actually exist.
+- Rewrote all five runbooks (`INSTALL.md`, `UNINSTALL_ROLLBACK.md`, `UPDATE_ROLLBACK.md`, `BACKUP_RESTORE.md`, `HEALTH_CHECKS.md`) for the corrected topology, including the official docs' explicit warning against two Hermes containers sharing one data directory, and an honest note that backup archives now contain live secrets once any profile is activated (a change from the earlier per-profile design's claim).
+- Added `docs/14_ACCEPTANCE_TESTS.md` criteria for the reconciled topology and digest pin.
+- Extended `docs/31_HERMES_DEPLOYMENT_PACKAGE.md` and `deploy/hermes/README.md` with the reconciliation history and the isolation-model summary.
+- `BACKLOG.md`: `HERMES-DEP-001` marked `done` (PR #10, merge commit `fff907f84a5917489c02447965ee78b8ad0ea25c`); added `HERMES-INSTALL-001` (`blocked_by_owner_vps_details`); tightened `ONYX-CORE-001`'s dependencies to require `HERMES-INSTALL-001` completed, `hermes doctor` passed, container healthy, a backup baseline, and a real (not conceptual) Governance fail-closed test.
+- **No real VPS was provisioned, connected to, or modified. No script under `deploy/hermes/` was executed against a real host. No profile was activated. No credential was created.**
+- Status:
+  ```text
+  Hermes VPS deployment package: done (merged and reconciled)
+  ADR-0013: Ratified (deployment preparation only)
+  VPS installation: blocked_by_owner_vps_details
+  onyx profile: specified, not activated
+  ```
+
 ## Unreleased — ONYX Executive Orchestrator specification (ONYX-CORE-001)
 
 - Added `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`: ONYX as the persistent-agent operationalization of the pre-existing `BRAIN-COO` (`docs/BRAIN_REGISTRY.md`), specifying its mission, ONYX v0.1 ("Executive Observer") read-only authority list, permanent prohibitions (never modifies Charter/Constitution/Kernel, never self-approves, fails closed if Governance is unavailable), model-routing-only model access (no hardcoded provider/model), a future materialization pipeline (not implemented), a future workspace design under `/srv/iios/profiles/onyx/` (not created on any real system — flagged as inconsistent with `deploy/hermes/`'s established `/opt/hermes/profiles/<name>/` convention), and a future executive-briefing report format that separates verified facts, ONYX's own analysis, other agents' attributed proposals, and the Owner's reserved decision.

@@ -1,10 +1,17 @@
 # Health checks runbook
 
-**Not executed by `HERMES-DEP-001`.** Reviewed ahead of any real VPS.
+**Not executed by this design/preparation task.** Reviewed ahead of any real VPS.
+
+## Two layers, not a duplicate
+
+1. **Docker's own `healthcheck:` block** (`core/docker-compose.yml.template`) runs `hermes status` inside the container on a short interval — this feeds `docker compose ps`/`docker inspect`'s health status directly and is Docker-native, always on.
+2. **`deploy/hermes/scripts/run-healthcheck.sh`**, scheduled by `systemd/hermes-healthcheck.timer`, is a deeper, host-level check: container running state, a restart-count heuristic (possible restart loop), host disk/memory, `hermes doctor`, and — looping over every profile the container currently hosts via `hermes profile list` — a per-profile `hermes -p <name> gateway status`.
+
+These do not conflict: Docker's healthcheck only *reports* status (it doesn't restart or supervise anything itself, matching the "one restart supervisor" rule in `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md`), while the external script is a separate observability pass with checks Docker's healthcheck can't express (host resources, per-profile detail).
 
 ## What is checked
 
-`deploy/hermes/scripts/run-healthcheck.sh` checks, in order: the `ict-trading` container's running state (`docker compose ps`), a restart-count heuristic via `docker inspect` (possible restart loop — compared against the previous run, stored in `/opt/hermes/logs/healthcheck-restart-count.state`), host disk free (`/opt/hermes`) and available memory, the **official** `hermes doctor` command (config/dependency diagnosis) and `hermes gateway status` (both run inside the container via `docker compose exec`, confirmed against `NousResearch/hermes-agent`'s CLI reference, consulted 2026-07-23 against release v0.19.0), `HERMES_HOME` writability, and the last 20 lines of `docker compose logs` for the profile.
+See `run-healthcheck.sh` — grounded in the **official** `hermes doctor`, `hermes profile list`, and `hermes -p <name> gateway status` commands (confirmed against `NousResearch/hermes-agent`'s CLI reference, consulted 2026-07-23 against release v0.19.0 / tag `v2026.7.20`), run inside the container via `docker exec`.
 
 ## What is not checked
 
@@ -16,7 +23,7 @@ This is a liveness/diagnostic check, not a correctness check — `hermes doctor`
 
 ## On failure
 
-`run-healthcheck.sh` exits non-zero and prints `FAIL: ...` lines (captured by the journal via systemd). The health-check unit **does not restart anything** — it only observes and logs. Recovery is Docker's own `restart: unless-stopped` policy on the container; there is no gateway-supervising systemd unit in this package (`docs/31_HERMES_DEPLOYMENT_PACKAGE.md` §2) to exhaust a restart-burst limit on. If Docker's own restart policy has been cycling repeatedly, the script's restart-count heuristic (§ "What is checked") is what surfaces that, not a systemd-level signal.
+`run-healthcheck.sh` exits non-zero and prints `FAIL: ...` lines (captured by the journal via systemd). The health-check unit **does not restart anything** — it only observes and logs. Recovery is Docker's own `restart: unless-stopped` policy on the container plus the image's own built-in s6-overlay auto-restarting a crashed profile gateway; there is no gateway-supervising systemd unit in this package for either to conflict with.
 
 ## Alerting
 
@@ -24,8 +31,8 @@ Not implemented by this package — `journalctl -u hermes-healthcheck.service` i
 
 ## Secrets in check output
 
-`hermes doctor` and `hermes gateway status` output is always redirected to `/tmp/hermes-doctor.out` / `/tmp/hermes-gateway-status.out`, not printed to the journal, and only surfaced by the script (as a "see /tmp/..." pointer) when the command fails. Treat those files as internal-only and clean them up after review — this design task did not independently verify that neither command ever surfaces a secret value in its output; do not ship those files anywhere outside the host without checking first.
+`hermes doctor` and per-profile `gateway status` output is always redirected to `/tmp/hermes-doctor.out` / `/tmp/hermes-gateway-status-<profile>.out`, not printed to the journal, and only surfaced by the script (as a "see /tmp/..." pointer) when the command fails. Treat those files as internal-only and clean them up after review — this design task did not independently verify that neither command ever surfaces a secret value in its output; do not ship those files anywhere outside the host without checking first.
 
 ## Verifying the check itself works
 
-After install, deliberately stop the container (`docker compose stop ict-trading`) and confirm the next health-check run within 5 minutes reports `FAIL: hermes-ict-trading is not in a running state`. Restart it (`docker compose start ict-trading`) and confirm the following run reports OK. This is a one-time verification during install, not a standing test.
+After install, deliberately stop the container (`docker compose stop hermes`) and confirm the next health-check run within 5 minutes reports `FAIL: hermes is not running`. Restart it (`docker compose start hermes`) and confirm the following run reports OK, including a per-profile OK line for every profile that exists. This is a one-time verification during install, not a standing test.

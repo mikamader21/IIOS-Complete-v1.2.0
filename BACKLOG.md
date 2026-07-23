@@ -81,7 +81,7 @@ merged_as: PR #7, commit 381f525, merge commit bb4579bf82c6cddf65a5280e74b932771
 ID: HERMES-DEP-001
 title: Secure Hermes VPS deployment package
 phase: Phase 6 — Hermes Runtime Integration
-status: review
+status: done
 priority: P0
 dependencies: [GOV-IMP-001 merged and verified]  # satisfied: PR #7, merge commit bb4579b
 risk_class: C
@@ -125,15 +125,65 @@ audit: >
   official `hermes backup` command, and an unsafe default-apply firewall
   script. Full list: docs/31_HERMES_DEPLOYMENT_PACKAGE.md — "Corrections after
   upstream audit". No real VPS was touched during the audit or its fixes.
+reconciliation: >
+  A second Owner-directed reconciliation ("FINAL UPSTREAM RECONCILIATION —
+  BEFORE HERMES VPS INSTALLATION", 23 July 2026) re-verified the Hermes release
+  pin (confirmed v0.19.0 / tag v2026.7.20 / commit 3ef6bbd201263d354fd83ec55b3c306ded2eb72a
+  / Docker digest sha256:a6ce64e2038867885c2c90f6602425e6e70293d5e6d952a0e603a99265e01c40,
+  linux/amd64 — the Owner's own "v0.18.2 latest" observation was a stale/
+  pre-propagation read, resolved with evidence in ADR-0013) and corrected the
+  deployment topology from one-container-per-profile to one container hosting
+  multiple s6-supervised profiles, matching the product's own current
+  recommended pattern. Full detail: docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md
+  (now Ratified), docs/31_HERMES_DEPLOYMENT_PACKAGE.md.
 status_detail: >
-  HERMES-DEP-001: in review
+  HERMES-DEP-001: done (merged and reconciled)
   VPS installation: not authorized
   Hermes runtime: not installed
-  ict-trading profile: specified, not activated
+  onyx profile: specified, not activated (first profile)
+  ict-trading profile: specified, not activated (future profile)
 acceptance_tests: docs/14_ACCEPTANCE_TESTS.md — "Hermes VPS deployment package (HERMES-DEP-001)"
-note: Design/preparation scope only in this task — no real VPS was provisioned,
-  connected to, or modified, and no script under deploy/hermes/ was executed.
-  Connecting to or modifying a real VPS requires separate Owner authorization.
+note: Design/preparation scope only across both this task and its reconciliation —
+  no real VPS was provisioned, connected to, or modified, and no script under
+  deploy/hermes/ was executed against a real host. Connecting to or modifying a
+  real VPS is HERMES-INSTALL-001's own separate authorization.
+merged_as: PR #10, merge commit fff907f84a5917489c02447965ee78b8ad0ea25c. CI
+  verified green (5/5 checks: verify ubuntu/windows, governance-tests
+  ubuntu/windows, hermes-deployment-tests, run 30051091906).
+```
+
+```text
+ID: HERMES-INSTALL-001
+title: Install pinned Hermes base on authorized VPS
+phase: Phase 6 — Hermes Runtime Integration
+status: blocked_by_owner_vps_details
+priority: P0
+dependencies:
+  - reconciled deployment package merged (HERMES-DEP-001, done)
+  - CI green
+  - ADR-0013 ratified (done — docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md)
+  - VPS purchased (Owner-authorized 23 July 2026)
+  - Ubuntu provisioned
+  - Owner supplies non-secret VPS metadata (IP/hostname, architecture, provider)
+  - Owner confirms SSH public-key access
+risk_class: C
+owner_decision_required: true — this task connects to and installs software on a
+  real VPS, a standing AUTONOMY_PROTOCOL.md stop condition. The Owner has
+  authorized VPS purchase and preparation for this installation, but the
+  installation itself does not proceed until every dependency above is met and
+  a final go-ahead is given.
+deliverables:
+  - Pinned Hermes container running per deploy/hermes/core/docker-compose.yml.template
+  - Firewall applied (deploy/hermes/firewall/apply-ufw-rules.sh --apply)
+  - Backup and health-check systemd timers enabled and verified
+  - onyx profile created (not activated) per deploy/hermes/runbooks/INSTALL.md
+  - Install recorded in work/DONE.md / CHANGELOG.md with pinned digest, date, host identifier
+acceptance_tests: deploy/hermes/runbooks/INSTALL.md steps 1-14, all verified against
+  the real host, not simulated.
+note: This is the first task in this backlog authorized to touch a real VPS. It
+  installs and health-checks Hermes and creates the onyx profile — it does NOT
+  activate onyx (no credential, no gateway start) and does NOT activate
+  ict-trading. Activation is ONYX-CORE-001's own separate, further-gated scope.
 ```
 
 ```text
@@ -143,10 +193,19 @@ phase: Phase 6 — Hermes Runtime Integration
 status: blocked_by_dependency
 priority: P0
 dependencies:
-  - HERMES-DEP-001 merged and verified
-  - Hermes base installed and healthy
-  - ADR-0013 ratified
-  - VPS connection explicitly authorized by Owner
+  - HERMES-DEP-001 merged and verified (done)
+  - ADR-0013 ratified (done — docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md)
+  - HERMES-INSTALL-001 completed
+  - hermes doctor passed (real, on the installed host)
+  - container healthy (docker compose ps / healthcheck green, sustained)
+  - backup baseline completed (at least one verified, restore-tested backup exists)
+  - Governance fail-closed test passed (a real, executed test — not the
+    conceptual acceptance criteria in docs/14_ACCEPTANCE_TESTS.md — confirming
+    Governance-unavailable behavior denies rather than silently allows, once
+    Governance Core has an execution surface to test against)
+  - VPS connection explicitly authorized by Owner (satisfied for
+    HERMES-INSTALL-001's preparation scope; activation itself remains
+    separately gated by owner_decision_required below)
 risk_class: C
 owner_decision_required: true — activation on a real VPS requires explicit Owner
   authorization, independent of and in addition to the dependencies above.
@@ -171,9 +230,10 @@ future_deliverables:
 acceptance_tests: docs/14_ACCEPTANCE_TESTS.md — "ONYX Executive Orchestrator (ONYX-CORE-001,
   specification only)"
 note: Specification-only task. No profile was activated, no VPS was touched, no software
-  was installed. Path convention (/srv/iios/profiles/onyx/) differs from
-  deploy/hermes/'s established /opt/hermes/profiles/<name>/ convention — flagged in
-  docs/32 for reconciliation before implementation, not silently resolved.
+  was installed. The manifest's path convention was corrected in the topology
+  reconciliation (docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md Amendment 2) —
+  onyx is now specified as a named profile inside the single shared Hermes
+  container, not a dedicated /srv/iios/ container as an earlier draft had it.
 ```
 
 ```text
@@ -270,8 +330,9 @@ acceptance_tests: docs/11_CONTROL_CENTER_PRD.md MVP modules, once scoped.
 
 - `AOL-001` is `done` (PR #6 merged, commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`).
 - `GOV-IMP-001` is `done` (PR #7 merged, commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`; CI verified green, 4/4 checks, run `30047219545`).
-- `HERMES-DEP-001` is `review` on `feature/hermes-deployment-package` — design/preparation deliverables complete, no real VPS touched. Not marked `done` until merged and CI-verified.
-- `ONYX-CORE-001`, `ONYX-GOV-001`, `ONYX-BUILD-001` were added per the Owner's explicit sequencing instruction (23 July 2026): Hermes base installed -> ONYX-CORE-001 -> ONYX-GOV-001 -> ONYX-BUILD-001 -> ICT-KNOW-001 -> ICT-AGENT-001. Only `ONYX-CORE-001`'s specification/manifest deliverables are done in this task; none of the three is implemented, installed, or activated.
+- `HERMES-DEP-001` is `done` (PR #10 merged, merge commit `fff907f84a5917489c02447965ee78b8ad0ea25c`; CI verified green, 5/5 checks, run `30051091906`), then reconciled against the real upstream product a second time before any VPS install — see its `reconciliation` field and `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` (now **Ratified**).
+- `HERMES-INSTALL-001` is the next real-VPS task, `blocked_by_owner_vps_details` — the Owner has authorized VPS purchase and preparation, but installation itself waits on the Owner supplying non-secret VPS metadata and confirming SSH access.
+- `ONYX-CORE-001`, `ONYX-GOV-001`, `ONYX-BUILD-001` were added per the Owner's explicit sequencing instruction (23 July 2026): Hermes base installed -> ONYX-CORE-001 -> ONYX-GOV-001 -> ONYX-BUILD-001 -> ICT-KNOW-001 -> ICT-AGENT-001. `ONYX-CORE-001`'s dependencies were tightened in the reconciliation to require `HERMES-INSTALL-001` completed, `hermes doctor` passed, container healthy, a backup baseline, and a real (not conceptual) Governance fail-closed test — none of the three ONYX tasks is implemented, installed, or activated.
 - `ICT-KNOW-001` was reordered after `ONYX-BUILD-001` per that sequence and still cannot be scoped until the Owner confirms where the source ICT projects/documents live.
 - `ICT-AGENT-001` and `CONTROL-UI-001` depend on multiple upstream tasks not yet done; both remain `blocked_by_dependency`. `CONTROL-UI-001` additionally now requires a minimal ONYX chat surface — see that entry's `deliverables` for a flagged naming discrepancy in the Owner's instruction ("CONTROL-UI-BOOT-001") needing confirmation.
 - This backlog intentionally starts small. Additional documentation-adjacent tasks are expected to be filed as `proposed` by whichever session finds a gap — that filing itself is autonomy-permitted (`AUTONOMY_PROTOCOL.md`).

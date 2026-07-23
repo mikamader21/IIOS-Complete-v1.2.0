@@ -1,62 +1,86 @@
-# Template — not deployed by HERMES-DEP-001. Review before use on a real host.
+# Template — not deployed by HERMES-DEP-001/HERMES-INSTALL-001-preparation. Review
+# before use on a real host.
 #
-# Grounded in the OFFICIAL Hermes Agent Docker deployment
-# (https://hermes-agent.nousresearch.com/docs/user-guide/docker, consulted
-# 2026-07-23 against Hermes Agent v0.19.0, released 2026-07-20). The
-# official example is a single service — there is no "worker" container or
-# CLI subcommand in the real product; an earlier draft of this package
-# invented one and it has been removed (docs/31_HERMES_DEPLOYMENT_PACKAGE.md
-# — Corrections after upstream audit).
+# ONE official Hermes container hosting MULTIPLE s6-supervised profiles, per the
+# official documentation's own recommended pattern since the product's s6
+# migration (https://hermes-agent.nousresearch.com/docs/user-guide/docker,
+# consulted 2026-07-23): "the recommended deployment is one container hosting
+# all profiles." An earlier draft of this package used one container per
+# profile — that was the PRE-s6 recommended pattern and is no longer necessary
+# except for specific high-risk-isolation cases; see
+# docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md Amendment 2 and its "Future
+# dedicated-container option" section.
 #
-# Supervision: `restart: unless-stopped` plus the Docker daemon (itself a
-# systemd service on Ubuntu, dockerd/docker.service) is the officially
-# documented mechanism for keeping this container running across crashes
-# and reboots. No custom systemd unit wraps `docker compose up/down` here —
-# that would duplicate supervision Docker already provides and risks a
-# second, confusing control path (systemctl vs docker). See
-# docs/31_HERMES_DEPLOYMENT_PACKAGE.md section 3 for the full comparison.
+# Image pinned by DIGEST, not tag or `latest` — verified 2026-07-23 against
+# three independent official sources (GitHub releases, GitHub tags, Docker Hub
+# tag listing). Tag v2026.7.20 (= release v0.19.0) is recorded only as a
+# human-readable cross-reference; the digest is the actual deployment pin.
+# Re-verify the digest against the real host's CPU architecture before first
+# pull — this pins linux/amd64. If the VPS is ARM, use
+# sha256:ef58f7f6906a19ca4d7d77bb35711f3a9740c83c8eac692b9c038e13f27e09d5 instead.
 #
-# One container per IIOS profile, each with its OWN isolated host directory
-# as its entire HERMES_HOME (mounted at the official /opt/data path) —
-# this is a deliberate choice to get host-level isolation between profiles
-# (docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md decision 6), instead of
-# using Hermes' own multi-profile-per-installation feature
-# (~/.hermes/profiles/<name>/) inside one shared container. Add one service
-# block per profile, each with its own volume and (if published) its own
-# port pair.
+# Supervision: exactly one external supervisor (`restart: unless-stopped`) plus
+# the image's own built-in s6-overlay (PID 1, not something this file
+# configures — it is inherent to the image and supervises each profile's
+# gateway independently). No systemd unit wraps `docker compose up/down` in
+# this package — that would be a second, redundant supervisor.
 #
 # TAILSCALE_IP must be set in a .env file in THIS directory
-# (/opt/hermes/core/compose/.env — see compose.env.example), not exported
-# in an interactive shell: systemd-triggered `docker compose` invocations
-# (backup, health check) do not inherit a login shell's exported
-# variables, but Compose auto-loads a project-directory .env file for
-# every invocation, interactive or not. TAILSCALE_IP is a network fact,
-# not a secret, but is deploy-time/host-specific so it is not hardcoded
-# here. Ports are bound to that address only — never 0.0.0.0 — so nothing
-# is reachable off the private tunnel (docs/10_INFRASTRUCTURE.md — "no
-# public database/Redis/Hermes ports").
+# (/opt/hermes/core/compose/.env — see compose.env.example), not exported in an
+# interactive shell, so it is available to every `docker compose` invocation
+# regardless of caller (interactive, or systemd-triggered backup/health-check).
+#
+# No port is published by default. onyx v0.1 needs none (no messaging
+# platform, no dashboard, no external API client). Uncomment and bind to
+# TAILSCALE_IP only, never 0.0.0.0, when a real profile needs the gateway API
+# (8642) or dashboard (9119) — see docs/31_HERMES_DEPLOYMENT_PACKAGE.md.
+#
+# WARNING (from the official docs, verbatim): never run two Hermes gateway
+# containers against the same data directory simultaneously — session files
+# and memory stores are not designed for concurrent write access. This
+# service must never be started twice against the same volume.
 
 services:
-  ict-trading:
-    image: nousresearch/hermes-agent:0.19.0   # pinned — never :latest (ADR-0013 decision 9)
-    container_name: hermes-ict-trading
+  hermes:
+    image: nousresearch/hermes-agent@sha256:a6ce64e2038867885c2c90f6602425e6e70293d5e6d952a0e603a99265e01c40
+    # image reference above = nousresearch/hermes-agent:v2026.7.20 (release v0.19.0, linux/amd64)
+    container_name: hermes
     restart: unless-stopped
     command: gateway run
-    ports:
-      - "${TAILSCALE_IP:?set TAILSCALE_IP before starting}:8642:8642"   # gateway API
-      - "${TAILSCALE_IP:?set TAILSCALE_IP before starting}:9119:9119"   # dashboard
+    # ports:
+    #   - "${TAILSCALE_IP:?set TAILSCALE_IP before starting}:8642:8642"   # gateway API — only if a client needs it
+    #   - "${TAILSCALE_IP:?set TAILSCALE_IP before starting}:9119:9119"   # dashboard — only if HERMES_DASHBOARD=1
     volumes:
-      - /opt/hermes/profiles/ict-trading/state:/opt/data
+      - /opt/hermes/data:/opt/data
     env_file:
-      - /opt/hermes/core/secrets/.env   # container/orchestration-level flags only —
-                                         # see deploy/hermes/secrets/README.md for what
-                                         # belongs here versus inside /opt/data/.env
+      - /opt/hermes/core/secrets/.env   # container-level flags only — see
+                                         # deploy/hermes/secrets/README.md for
+                                         # what belongs here versus inside
+                                         # /opt/data/.env (Hermes' own secrets)
+    shm_size: "1gb"   # headroom for Playwright/browser-tool use by a future
+                       # profile; harmless if unused by onyx v0.1
+    healthcheck:
+      test: ["CMD", "hermes", "status"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
     deploy:
       resources:
         limits:
           memory: 4G
           cpus: "2.0"
 
-# No `worker` service. If Hermes ever ships a distinct worker process/
-# subcommand, add it here with a citation to the official docs that
-# introduced it — never speculatively.
+# No `user:` override — the image's own entrypoint (s6-overlay's /init) must
+# start as root to chown the volume on first boot, then drops every supervised
+# service (and docker exec sessions) to the container-internal `hermes` user
+# (UID 10000) itself. Setting our own `user:` here would break that sequence.
+# This is a documented default of the OFFICIAL image, not root execution by
+# this package (docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md decision 1
+# distinguishes this container-internal user from the host-level `hermes`
+# service account this package's scripts create).
+#
+# No `privileged: true`. No docker.sock bind mount (never opted into, even
+# though the image ships docker-cli — see the official docs' "What the
+# Dockerfile does"). No `network_mode: host`. No secret value anywhere in this
+# file — only a reference to a git-ignored, out-of-band-populated env file.

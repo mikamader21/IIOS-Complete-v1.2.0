@@ -13,7 +13,7 @@ Integrations and decisions that cannot proceed without a credential, provider se
 - **KMS/HSM/Vault product** for capability-signing key custody — category decided (ADR-0011), concrete provider open. `docs/23_CAPABILITY_MODEL.md` — Open questions.
 - **JWKS/trusted-registry hosting** for public-key distribution — not selected. `docs/23_CAPABILITY_MODEL.md` — Open questions.
 - **PostgreSQL/Supabase**: managed vs. self-hosted — open Owner decision. `PROJECT_STATE.md` — Owner decisions still required.
-- **VPS provider and monthly ceiling** — open Owner decision. `PROJECT_STATE.md`.
+- **VPS provider and monthly ceiling** — purchase authorized by the Owner (23 July 2026); specific provider and monthly ceiling still to be confirmed as part of `HERMES-INSTALL-001`'s dependency list (`BACKLOG.md`, `PROJECT_STATE.md`).
 - **JSON Schema validation library exact version pin** — library decided (`jsonschema`, `Draft202012Validator`, ADR-0011), version not pinned. `governance/schemas/README.md`.
 
 ## Requires cost approval
@@ -35,5 +35,5 @@ Integrations and decisions that cannot proceed without a credential, provider se
 - **Vault sync method** — separate from backup, undecided. `PROJECT_STATE.md`.
 - ~~**Governance Core implementation authorization**~~ — **resolved** 23 July 2026, "AUTORIZACIÓN DEL OWNER — PHASE 3," scoped to the local skeleton only (`GOV-IMP-001`). Production implementation remains a separate future authorization.
 - **Make.com mutating-action integration** — structurally Class C pending live Governance mediation; not just a technical blocker, a standing policy gate (`docs/21_GOVERNANCE_CORE_SPEC.md` case #14b).
-- **Real VPS connection/modification for `HERMES-DEP-001`** — designing and preparing the deployment package is in progress and needs no further decision; connecting to or modifying an actual VPS does.
+- **Real VPS connection/modification (`HERMES-INSTALL-001`)** — the deployment package is done and reconciled against the real upstream product (`HERMES-DEP-001`, merged); VPS purchase is authorized; installation itself still needs the Owner to supply non-secret VPS metadata and confirm SSH access before it proceeds (`BACKLOG.md` `HERMES-INSTALL-001`, `blocked_by_owner_vps_details`).
 - **Source location for `ICT-KNOW-001`** — the Owner has not yet confirmed where the existing ICT source projects/documents live; the task cannot be scoped until then.

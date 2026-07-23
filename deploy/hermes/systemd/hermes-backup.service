@@ -1,36 +1,26 @@
-# Template — not installed by HERMES-DEP-001. Review before copying to /etc/systemd/system/.
+# Template — not installed by HERMES-DEP-001/HERMES-INSTALL-001-preparation.
+# Review before copying to /etc/systemd/system/.
 #
-# One-shot backup job, triggered by hermes-backup.timer. Runs the OFFICIAL
-# `hermes backup` command inside the running container via `docker compose
-# exec` (deploy/hermes/scripts/run-backup.sh) — not a raw tar of arbitrary
-# host paths, so it cannot sweep up a cache or virtualenv the way a naive
-# tar of the whole state directory could.
-#
-# REQUIRES: the `hermes` service user to be a member of the host's
-# `docker` group so it can run `docker compose exec` without root. That
-# group membership is itself effectively root-equivalent on this host
-# (docker.sock access = host access) — this is a real, documented
-# trade-off of running scheduled Docker-exec jobs as a supposedly
-# unprivileged user, recorded in docs/31_HERMES_DEPLOYMENT_PACKAGE.md's
-# threat model rather than silently accepted. No alternative avoiding this
-# trade-off was identified during this design task without giving up
-# `docker compose exec`-based backups entirely.
+# One-shot backup job, triggered by hermes-backup.timer. Runs a host-level
+# tar of the single shared Hermes data volume (/opt/hermes/data) —
+# deploy/hermes/scripts/run-backup.sh. No docker exec, no `docker` group
+# membership required for this job (unlike hermes-healthcheck.service,
+# which does need it — see that unit's comment): /opt/hermes/data is a
+# plain host directory the `hermes` user already owns.
 
 [Unit]
-Description=Hermes backup job (docker compose exec hermes backup)
+Description=Hermes backup job (host-level tar of the shared data volume)
 Documentation=file:///opt/hermes/runbooks/BACKUP_RESTORE.md
-After=docker.service
-Requires=docker.service
 
 [Service]
 Type=oneshot
 User=hermes
 Group=hermes
-WorkingDirectory=/opt/hermes/core/compose
+WorkingDirectory=/opt/hermes
 ExecStart=/opt/hermes/core/compose/scripts/run-backup.sh
 
 NoNewPrivileges=yes
 ProtectSystem=strict
-ReadWritePaths=/opt/hermes/backups /opt/hermes/logs /opt/hermes/profiles
-ReadOnlyPaths=/opt/hermes/core/compose
+ReadWritePaths=/opt/hermes/backups /opt/hermes/logs
+ReadOnlyPaths=/opt/hermes/data
 ProtectHome=yes

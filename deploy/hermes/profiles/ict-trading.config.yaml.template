@@ -2,12 +2,15 @@
 #
 # A real Hermes Agent config.yaml fragment (upstream key names/values
 # confirmed against cli-config.yaml.example, NousResearch/hermes-agent,
-# consulted 2026-07-23 against release v0.19.0 — 2026-07-20). This is NOT
+# consulted 2026-07-23 against release v0.19.0 / tag v2026.7.20). This is NOT
 # a complete config.yaml; it lists only the keys this deployment
 # deliberately sets, to be merged into (or used to seed) the generated
-# file at /opt/hermes/profiles/ict-trading/state/config.yaml, which is
-# HERMES_HOME/config.yaml once the ict-trading container's volume is
-# mounted (docs/31_HERMES_DEPLOYMENT_PACKAGE.md — materialization step).
+# file at /opt/data/profiles/ict-trading/config.yaml — a named-profile
+# subtree of the ONE shared Hermes container's HERMES_HOME
+# (docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md decision 2, 10), created
+# via `docker exec hermes hermes profile create ict-trading`
+# (docs/31_HERMES_DEPLOYMENT_PACKAGE.md — materialization step). This is a
+# future profile, not activated by this task.
 #
 # deploy/hermes/profiles/ict-trading.profile.json is the IIOS-authored
 # deployment manifest (source of truth in Git); this file is what that
@@ -30,15 +33,23 @@ terminal:
   # there, not silently changed.)
   backend: "local"
 
-  # Absolute path inside the container (which is /opt/data, the mounted
-  # volume root — see core/docker-compose.yml.template). Never relative
-  # ("."), per docs/03_GOVERNANCE_SECURITY.md's "Set explicit terminal.cwd."
-  cwd: "/opt/data/workspace"
+  # Absolute path inside the shared container, under this profile's own
+  # subtree of the single /opt/data volume (see core/docker-compose.yml.template
+  # and docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md decision 2). Never
+  # relative ("."), per docs/03_GOVERNANCE_SECURITY.md's "Set explicit
+  # terminal.cwd." Not independently confirmed against a real profile-creation
+  # run — see the cwd_note in ict-trading.profile.json.
+  cwd: "/opt/data/profiles/ict-trading/workspace"
 
   # "profile" (not the invented "profile_scoped") — forces
-  # HOME={HERMES_HOME}/home for subprocesses, i.e. /opt/data/home inside
-  # the container, /opt/hermes/profiles/ict-trading/state/home on the
-  # host. Strict per-profile isolation; no real OS-user HOME is ever used.
+  # HOME={HERMES_HOME}/home for subprocesses. For this named profile that is
+  # expected to resolve under /opt/data/profiles/ict-trading/ (host:
+  # /opt/hermes/data/profiles/ict-trading/) — not independently confirmed,
+  # same caveat as cwd above. Strict per-profile isolation at the
+  # application layer; no real OS-user HOME is ever used. This does NOT
+  # isolate this profile from a co-located profile at the OS/container
+  # layer — see docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md "Real
+  # isolation boundaries."
   home_mode: "profile"
 
 # Explicit allowlist, empty by default (docs/03_GOVERNANCE_SECURITY.md —
