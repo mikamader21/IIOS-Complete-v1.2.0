@@ -1,6 +1,6 @@
 # ADR-0010 — Governance Core Boundaries
 
-Status: Proposed for Owner ratification
+Status: Ratified
 Date: 22 July 2026
 Owner: IIOS Owner
 
@@ -50,3 +50,9 @@ None directly — no service is deployed, no credential is created, no financial
 
 Rollback: revert this branch before merge; nothing outside `docs/21`-`docs/26`, this ADR, `governance/schemas/`, and the permitted status-file updates is touched, so rollback is a clean branch discard with no effect on `main`, the Invariant Kernel, or any ratified document.
 Review date: before Governance Core implementation begins, and at any future Constitution or Invariant Kernel amendment that touches Article III, IV, or VIII.
+
+## Ratification record
+
+Ratified by: Owner.
+Ratification date: 23 July 2026.
+Concrete MVP parameter decisions (idempotency window, actor authentication, Class C approval TTL, capability envelope format and key custody, capability TTLs by class, rate limiting, `audience` scope, secret-handling verbs, Make.com classification, Draft 2020-12 validation library, Policy Engine format conditions) are recorded separately in `docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md` and do not modify this ADR's architectural boundaries. This ADR's Context, Decision, Alternatives, and Consequences sections are unchanged by ratification.

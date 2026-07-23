@@ -1,13 +1,22 @@
 # Changelog
 
-## Unreleased — Governance Core specification
+## 1.3.0 — Governance Core Specification — 23 July 2026
 
-- Added `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`: technical specification of the Governance API, Action Classifier, Orchestrator Boundary, Policy Engine, Capability Model, Approval Model, Audit Event Model, and Kill Switch.
-- Added `docs/ADR/ADR-0010-GOVERNANCE-CORE-BOUNDARIES.md` recording the boundary decisions and discarded alternatives.
-- Added `governance/schemas/` with six JSON Schema (Draft 2020-12) contracts: action-request, policy-decision, approval, capability-token, audit-event, kill-switch-event.
-- Extended `scripts/verify_foundation.py` to require the presence and JSON validity of the new documents and schemas.
-- No backend, database, migration, MCP, model call, service, or external connector was implemented. No change to `docs/00_MASTER_CHARTER.md`, `docs/01_CONSTITUTION.md`, or `governance/invariant-kernel/invariants.json`.
-- Status: **Governance Core: specified, not implemented.** Pending Owner review and ratification of ADR-0010 before any implementation work begins.
+Documentation prepared for this version; tag `v1.3.0` is not yet created and publishes only after merge, green CI (Ubuntu + Windows), and post-merge verification.
+
+- Added `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`: technical specification of the Governance API, Action Classifier, Orchestrator Boundary, Policy Engine, Capability Model (claims / protected header / wire token contracts), Approval Model, Audit Event Model (RFC 8785 recommended for canonicalization), and Kill Switch.
+- Added `docs/ADR/ADR-0010-GOVERNANCE-CORE-BOUNDARIES.md` recording the boundary decisions and discarded alternatives. **Ratified by the Owner, 23 July 2026.**
+- Added `docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md`, **ratified by the Owner, 23 July 2026**, fixing concrete MVP parameters: idempotency window (24h, configurable to 7 days), actor authentication (OIDC+MFA+WebAuthn for humans, mTLS+workload identity for services/agents/runtimes), Class C approval TTL (15 min default, 60 min max non-production), single-approver MVP, capability envelope format and key custody (KMS/HSM/Vault, 90-day rotation), capability TTLs by class, rate limiting independent of Cost Governance, `audience` single-valued for MVP, Make.com classification (read-only metadata Class A via allowlisted connector, all mutations Class C), kill-switch drill cadence, and the JSON Schema validation library (Python `jsonschema`, `Draft202012Validator`).
+- **Corrected, same day (23 July 2026):** the capability envelope's cryptographic profile was tightened per Owner decision to **JWS Compact Serialization** (RFC 7515), `alg: "Ed25519"` (the fully-specified JOSE identifier, RFC 9864 — the polymorphic `EdDSA` identifier is excluded from new issuance), `kid`/`typ` mandatory inside the signed protected header (never as external fields). The capability model was split into three schema contracts — `governance/schemas/capability-claims.schema.json` (logical claims), `governance/schemas/capability-protected-header.schema.json` (decoded header), and a redefined `governance/schemas/capability-token.schema.json` (the wire artifact, surface-shape validation only) — replacing the earlier flat envelope shape. `docs/23_CAPABILITY_MODEL.md` gained an explicit Issuance profile, Verification profile, an I-JSON (RFC 7493) validation gate ahead of RFC 8785 JCS canonicalization for both the protected header and claims, a 14th capability-specific reason code (`CAPABILITY_HEADER_INVALID`), and fully worked, schema-valid, non-sensitive examples of the header, claims, and an illustrative (unsigned) wire token.
+- Added `governance/schemas/` with eight JSON Schema (Draft 2020-12) contracts: action-request, policy-decision, approval, capability-claims, capability-protected-header, capability-token, audit-event, kill-switch-event. Validation performed is **structural** (valid JSON, declared Draft 2020-12 `$schema`, internal `$ref` resolution) — not full conformance or meta-schema validation; that gap is a recorded future implementation requirement.
+- Extended `scripts/verify_foundation.py` to require the presence and structural validity of the new documents and schemas.
+- Corrected three overclaims before this specification is considered final: self-approval prevention is enforced by the Policy Engine and Approval Service, not by JSON Schema (which cannot express cross-field comparison); audit-event canonicalization recommends RFC 8785, distinct from the Invariant Kernel's CRLF/LF file-portability normalization; the capability envelope now reflects a real JWS Compact Serialization instead of a flat, non-standard `{algorithm, key_id, payload, signature}` shape.
+- No backend, database, migration, MCP, model call, service, connector, or infrastructure was implemented. No change to `docs/00_MASTER_CHARTER.md`, `docs/01_CONSTITUTION.md`, or `governance/invariant-kernel/invariants.json`.
+- Status:
+  ```text
+  Governance Core specification: ratified
+  Governance Core implementation: not started
+  ```
 
 ## 1.2.1 — 22 July 2026
 

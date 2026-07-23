@@ -1,9 +1,16 @@
 # IIOS Project State
 
-**Version:** 1.2.1  
-**Review date:** 22 July 2026  
+**Version:** 1.3.0 — Governance Core Specification (documentation prepared; tag not yet created — publishes only after merge, green CI, and post-merge verification)
+**Review date:** 23 July 2026
 **Phase:** 0 — Foundation  
-**Status:** Foundation v1.2.0 ratified by Owner and merged to `main`. v1.2.1 is a technical portability patch (cross-platform Invariant Kernel checksum, `.gitattributes`, Windows+Ubuntu CI) with no change to ratified constitutional content.
+**Status:** Foundation v1.2.0/v1.2.1 ratified and merged. ADR-0010 (Governance Core Boundaries) and ADR-0011 (Governance MVP Owner Decisions) are **ratified** by the Owner. The capability envelope's cryptographic profile was corrected 23 July 2026: JWS Compact Serialization, `alg: Ed25519` (RFC 9864 fully-specified identifier, not the polymorphic `EdDSA`), `kid`/`typ` mandatory in the protected header — see `docs/23_CAPABILITY_MODEL.md` and ADR-0011.
+
+```text
+Governance Core specification: ratified
+Governance Core implementation: not started
+```
+
+No Governance API, Policy Engine, Approval Service, capability issuer, audit storage, or kill switch is implemented. These remain design contracts only (`docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`, `governance/schemas/`) until a separate, explicitly authorized implementation phase begins.
 
 ## Approved design direction proposed for ratification
 
@@ -21,7 +28,7 @@
 
 ## Current objective
 
-Governance Core: specified, not implemented. `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`, ADR-0010 and `governance/schemas/` convert the Constitution and Invariant Kernel into reviewable technical contracts (Governance API, Action Classifier, Policy Engine, Approval Service, Capability Tokens, Audit Events, Kill Switch). No backend, database, migration, MCP, model call, or external connector was added. Do not implement domain agents yet.
+Governance Core specification is ratified (ADR-0010, ADR-0011); implementation has **not started**. `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md` and `governance/schemas/` convert the Constitution and Invariant Kernel into reviewable technical contracts (Governance API, Action Classifier, Policy Engine, Approval Service, Capability Payload/Signed Envelope, Audit Events, Kill Switch), and ADR-0011 fixes the concrete MVP parameters (idempotency window, actor authentication, Class C approval TTL, capability envelope format JWS/EdDSA/Ed25519, key custody, capability TTLs, rate limiting, Make.com classification, kill-switch drill cadence, JSON Schema validation library). No backend, database, migration, MCP, model call, connector, or infrastructure was added. Do not implement domain agents yet.
 
 ## Foundation acceptance criteria
 
@@ -31,8 +38,8 @@ Governance Core: specified, not implemented. `docs/21_GOVERNANCE_CORE_SPEC.md` t
 - [x] `python scripts/verify_foundation.py` passes locally and in GitHub Actions, on both Ubuntu and Windows (v1.2.1).
 - [ ] Main branch protection requires the verification workflow.
 - [ ] No unresolved Critical finding remains.
-- [x] Action classes and approval rules are accepted (Action Classifier + Approval Model specified, `docs/21_GOVERNANCE_CORE_SPEC.md`, `docs/24_APPROVAL_MODEL.md`; pending Owner ratification of ADR-0010).
-- [x] Threat model and fail-closed behavior are accepted (fail-closed rule restated and applied uniformly across Governance API, Policy Engine, Capability Tokens, Audit, Kill Switch; pending Owner ratification of ADR-0010).
+- [x] Action classes and approval rules are accepted (Action Classifier + Approval Model specified, `docs/21_GOVERNANCE_CORE_SPEC.md`, `docs/24_APPROVAL_MODEL.md`; ADR-0010 ratified by Owner 23 July 2026; concrete MVP parameters ratified in ADR-0011).
+- [x] Threat model and fail-closed behavior are accepted (fail-closed rule restated and applied uniformly across Governance API, Policy Engine, Capability Tokens, Audit, Kill Switch; ADR-0010 ratified by Owner 23 July 2026).
 - [ ] Repository and Vault are private with independent backups.
 - [ ] Secret handling and environment separation are defined.
 - [x] Governance API interfaces are specified before implementation (`docs/21_GOVERNANCE_CORE_SPEC.md`, `governance/schemas/action-request.schema.json`, `governance/schemas/policy-decision.schema.json`). Governance API itself remains **not implemented**.

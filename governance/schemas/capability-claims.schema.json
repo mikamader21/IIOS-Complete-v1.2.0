@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/capability-claims.schema.json",
+  "title": "IIOS Capability Claims",
+  "description": "The logical claims a capability asserts. This is the LOGICAL view only — it is not a wire format. Before signing, an issuer serializes an instance of this shape via RFC 8785 (JCS) to produce the JWS payload bytes. See docs/23_CAPABILITY_MODEL.md 'Issuance profile'. This object never appears on the wire on its own; the wire artifact is governance/schemas/capability-token.schema.json.",
+  "type": "object",
+  "required": [
+    "capability_id",
+    "issuer",
+    "subject",
+    "audience",
+    "action",
+    "resource",
+    "environment",
+    "policy_version",
+    "issued_at",
+    "not_before",
+    "expires_at",
+    "max_uses",
+    "correlation_id",
+    "nonce"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "capability_id": { "type": "string", "format": "uuid" },
+    "issuer": {
+      "type": "string",
+      "description": "Identifies the Governance API instance/environment that issued this payload."
+    },
+    "subject": {
+      "type": "string",
+      "description": "Bound actor. Not transferable to another actor."
+    },
+    "audience": {
+      "type": "string",
+      "description": "The executor/service this capability is valid for. Single-valued for MVP (docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md — audience). Prevents a capability issued for one execution surface being replayed against a different one."
+    },
+    "action": {
+      "type": "string",
+      "description": "verb:resource_type, e.g. 'merge:git_protected_branch'."
+    },
+    "resource": {
+      "type": "string",
+      "description": "Concrete resource_ref. Exact match required at consumption."
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["local", "staging", "production", "n/a"]
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Policy this payload was evaluated and issued under; checked against the currently active policy_version at consumption, not only at issuance."
+    },
+    "approval_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Required (non-null) for any capability derived from a Class C action item."
+    },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "not_before": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Capability is not valid before this instant."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "MUST be short-lived and close to issued_at. Ceiling per class is fixed in docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md — Capability TTLs by class."
+    },
+    "max_uses": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Intended use ceiling declared at issuance. The LIVE remaining-use count is server-side state keyed by capability_id, deliberately absent from this object — see docs/23_CAPABILITY_MODEL.md."
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Additional scope-narrowing conditions the executor must satisfy, e.g. max amount, allowed commit SHA.",
+      "additionalProperties": true
+    },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "nonce": {
+      "type": "string",
+      "description": "Unique per issuance. Combined with capability_id, detects replay of an already-consumed capability independent of the server-side use counter."
+    }
+  },
+  "$comment": "Deliberately absent by design, not by oversight: uses_remaining, revoked, revoked_at (server-side consumption state — see docs/23_CAPABILITY_MODEL.md 'What is NOT in the payload, and why'), and any signature-related property (alg, kid, signature — those belong to governance/schemas/capability-protected-header.schema.json and governance/schemas/capability-token.schema.json). No secret value is ever a claim here."
+}

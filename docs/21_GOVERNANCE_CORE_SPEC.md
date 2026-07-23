@@ -56,7 +56,7 @@ The Governance API:
 ### Inputs and outputs
 
 Input: `governance/schemas/action-request.schema.json`.
-Output: `governance/schemas/policy-decision.schema.json`, plus, when applicable, a record conforming to `approval.schema.json` and/or `capability-token.schema.json`, plus one or more `audit-event.schema.json` records.
+Output: `governance/schemas/policy-decision.schema.json`, plus, when applicable, a record conforming to `approval.schema.json` and/or the three capability contracts (`capability-claims.schema.json`, `capability-protected-header.schema.json`, `capability-token.schema.json` — see `docs/23_CAPABILITY_MODEL.md`), plus one or more `audit-event.schema.json` records.
 
 ### Authentication
 
@@ -170,7 +170,8 @@ Class per Constitution Article IV and the MVP action matrix in `docs/03_GOVERNAN
 | 11 | Rotate an API key | C (`secret_reference.use` — the rotation operation itself, not disclosure of the old or new value) | require_approval | Secret Manager audit | pending → approved | single-use | same pattern as #8; old/new key values never appear in the request, decision, capability, or audit trail | deny |
 | 12 | Activate an MCP connector | C | require_approval | Manifest/source review, version pinning | pending → approved | single-use, scoped to connector id + pinned version | same pattern as #8 | deny |
 | 13 | Send an email | C | require_approval | "External message" until an explicit ratified policy narrows it | pending → approved | single-use, scoped to recipient + template | same pattern as #8 | deny |
-| 14 | Run a Make scenario | C (not executable) | deny | ADR-0008 Cowork boundary; external write requires live Governance mediation, which does not exist yet | pending (cannot progress) | none issuable | request_received, policy_decision (deny, `GOVERNANCE_MEDIATION_UNAVAILABLE`) | deny |
+| 14 | Make.com — list/query scenario metadata (read-only) | A, only via a technically read-only, allowlisted connector | allow (once such a connector exists; not implemented here) | ADR-0011 — Make.com | not_required | yes, reusable within TTL, read-only scope | request_received, policy_decision, capability_issued, execution_result | deny |
+| 14b | Make.com — run, activate, deactivate, edit, or create a scenario | C (not executable today) | deny | ADR-0008 Cowork boundary + ADR-0011 — Make.com; external write requires live Governance mediation, which does not exist yet | pending (cannot progress) | none issuable | request_received, policy_decision (deny, `GOVERNANCE_MEDIATION_UNAVAILABLE`) | deny |
 | 15 | Migrate Supabase schema | C | require_approval | Backup + migration tool control (`docs/10_INFRASTRUCTURE.md`) | pending → approved | single-use | same pattern as #8 | deny |
 | 16 | Modify the Constitution | D, categorically outside Governance API's authorization surface | deny | Constitution Art. III.1; only an out-of-band Owner ratification process (Git PR + ADR + version increment) can change it | n/a — not an approvable action type | none — no capability class exists for this | request_received, policy_decision (deny, `PROTECTED_AUTHORITY_PATH`) | deny |
 | 17 | Modify the Invariant Kernel | D, categorically outside Governance API's authorization surface | deny | Constitution Art. III.1; same out-of-band process as #16 | n/a | none | request_received, policy_decision (deny, `PROTECTED_AUTHORITY_PATH`) | deny |
@@ -216,13 +217,22 @@ Test runner intentionally not implemented in this change. Table defines the requ
 
 ## Open questions for the Owner
 
-1. Idempotency window default (proposed: 24h) — confirm or set a different value.
-2. Concrete actor authentication mechanism (session vs. mTLS vs. signed service token) for the eventual implementation phase.
-3. Default Class C approval TTL (proposed default discussed in `docs/24_APPROVAL_MODEL.md`) — confirm.
-4. Whether `required_approvals > 1` is needed for any MVP action, or deferred entirely past MVP.
-5. Capability signing algorithm and key custody (`docs/23_CAPABILITY_MODEL.md` Open questions).
-6. Exact kill-switch periodic test cadence (`docs/26_KILL_SWITCH_SPEC.md` proposes quarterly).
-7. Whether Make-scenario execution (#14) should remain permanently Class C-gated-on-live-Governance, or whether a narrower read-only Make trigger type should be carved out as Class A in a future ratified policy.
+All seven items below were **resolved by Owner decision, ratified in `docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md`** (23 July 2026). Kept here as a historical record of what was asked; see ADR-0011 for the concrete answers.
+
+1. ~~Idempotency window default~~ — **Resolved**: 24h default, configurable up to 7 days (ADR-0011 — Idempotency).
+2. ~~Concrete actor authentication mechanism~~ — **Resolved**: OIDC+MFA+WebAuthn for humans, mTLS with short-lived workload identity for services/agents/runtimes (ADR-0011 — Actor authentication).
+3. ~~Default Class C approval TTL~~ — **Resolved**: 15 min default, 60 min max in non-production for reversible actions only (ADR-0011 — Class C approvals).
+4. ~~Whether `required_approvals > 1` is needed for any MVP action~~ — **Resolved**: single approver (Owner) for MVP; multi-approver support remains in the model but deferred past MVP (ADR-0011 — Class C approvals).
+5. ~~Capability signing algorithm and key custody~~ — **Resolved**: JWS Compact Serialization, `alg: Ed25519` (fully-specified identifier, not the polymorphic `EdDSA`), `kid`/`typ` mandatory in the protected header; private key in KMS/HSM/external Vault, 90-day rotation, 24h key-overlap ceiling (ADR-0011 — Capability envelope format, corrected 23 July 2026; `docs/23_CAPABILITY_MODEL.md`).
+6. ~~Exact kill-switch periodic test cadence~~ — **Resolved**: L1/L2 monthly staging, L3 quarterly staging, L4 semiannual staging + annual production tabletop, L5 annual tabletop; a real L5 activation drill needs separate explicit Owner authorization (ADR-0011 — Kill Switch test cadence).
+7. ~~Whether Make-scenario execution (#14) should remain permanently Class C-gated, or a narrower read-only Class A carve-out created~~ — **Resolved**: read-only metadata listing/query may be Class A via a technically read-only allowlisted connector; every mutating scenario action is Class C; no new subclass created for MVP (ADR-0011 — Make.com).
+
+### Still open (not addressed by ADR-0011)
+
+- Exact pinned version of the `jsonschema` Python library (library and validator class are decided; the version pin is implementation-time work — `governance/schemas/README.md`).
+- Governance API's concrete transport/protocol (HTTP/REST, gRPC, or other) and framework — actor authentication *method* is decided (OIDC/mTLS), the wire protocol is not.
+- Policy bundle's own structural schema (analogous to `governance/invariant-kernel/schema.json`) — format conditions are fixed (`docs/22_POLICY_ENGINE_EVALUATION.md`), the concrete schema document does not exist yet.
+- External signature/anchoring for audit hash-chain tamper-resistance beyond tamper-evidence (`docs/25_AUDIT_EVENT_MODEL.md` — Integrity today vs. tamper resistance tomorrow) — not addressed by this ADR.
 
 ## Status
 
