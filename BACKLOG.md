@@ -43,7 +43,7 @@ merged_as: PR #6, commit 83c2c73, merge commit 1f4ea9762cb5a2060cc38746af057c63e
 ID: GOV-IMP-001
 title: Governance Core implementation skeleton
 phase: Phase 3 — Governance Core Implementation
-status: review
+status: done
 priority: P0
 dependencies: [AOL-001]
 risk_class: C
@@ -72,15 +72,18 @@ acceptance_tests: >
   cases; docs/AUTONOMY_ACCEPTANCE_TESTS.md; concrete pytest suite under
   tests/governance/ (this task's own deliverable) — all passing, 97% coverage,
   clean ruff/mypy.
+merged_as: PR #7, commit 381f525, merge commit bb4579bf82c6cddf65a5280e74b9327714340a45.
+  CI verified green (4/4 checks: verify ubuntu/windows, governance-tests
+  ubuntu/windows, run 30047219545).
 ```
 
 ```text
 ID: HERMES-DEP-001
 title: Secure Hermes VPS deployment package
 phase: Phase 6 — Hermes Runtime Integration
-status: blocked_by_dependency
+status: ready
 priority: P0
-dependencies: [GOV-IMP-001 merged and verified]
+dependencies: [GOV-IMP-001 merged and verified]  # satisfied: PR #7, merge commit bb4579b
 risk_class: C
 owner_decision_required: >
   false to design and prepare the package (documentation, scripts, configuration
@@ -105,8 +108,8 @@ deliverables:
   - installation runbook
   - uninstall/rollback runbook
 acceptance_tests: Not yet defined. Must not execute against a real VPS on this task alone.
-note: Must not be started on feature/governance-core-skeleton. Becomes a ready candidate
-  once GOV-IMP-001 is merged and its own PR checks are verified green.
+note: Design/preparation scope only in this task. Connecting to or modifying a real
+  VPS requires separate Owner authorization.
 ```
 
 ```text
@@ -158,8 +161,8 @@ acceptance_tests: docs/11_CONTROL_CENTER_PRD.md MVP modules, once scoped.
 ## Notes
 
 - `AOL-001` is `done` (PR #6 merged, commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`).
-- `GOV-IMP-001` is `review` on `feature/governance-core-skeleton` (PR pending/opened), authorized by the Owner's "AUTORIZACIÓN DEL OWNER — PHASE 3" instruction (23 July 2026), scoped explicitly to a local, deterministic, in-memory implementation skeleton — not a production system. Not marked `done` until merged and CI-verified.
-- `HERMES-DEP-001` becomes a `ready` candidate once `GOV-IMP-001` is merged and its PR checks verified green — **must not be started on `feature/governance-core-skeleton`**. Designing/preparing the package needs no further Owner decision; connecting to or modifying a real VPS does.
+- `GOV-IMP-001` is `done` (PR #7 merged, commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`; CI verified green, 4/4 checks, run `30047219545`).
+- `HERMES-DEP-001` is `ready` — its only dependency is satisfied. Designing/preparing the package needs no further Owner decision; connecting to or modifying a real VPS does. This is the next task selected under `AUTONOMY_PROTOCOL.md`.
 - `ICT-KNOW-001` cannot be scoped until the Owner confirms where the source ICT projects/documents live.
 - `ICT-AGENT-001` and `CONTROL-UI-001` depend on multiple upstream tasks not yet done; both remain `blocked_by_dependency`.
 - This backlog intentionally starts small. Additional documentation-adjacent tasks are expected to be filed as `proposed` by whichever session finds a gap — that filing itself is autonomy-permitted (`AUTONOMY_PROTOCOL.md`).

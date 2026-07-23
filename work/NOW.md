@@ -1,14 +1,9 @@
 # NOW
 
-**`GOV-IMP-001` — Governance Core implementation skeleton — `review`.**
+**`HERMES-DEP-001` — Secure Hermes VPS deployment package — `in_progress`.**
 
-Branch `feature/governance-core-skeleton`, authorized by the Owner's "AUTORIZACIÓN DEL OWNER — PHASE 3" instruction (23 July 2026), scope explicitly limited to a local, deterministic, in-memory reference implementation (`src/iios_governance/`) with no production cryptography, no external providers, no database, and no execution of actions.
+Branch `feature/hermes-deployment-package`. Dependency `GOV-IMP-001` satisfied: PR #7 merged (commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`), CI verified green (4/4 checks, run `30047219545`). Task selected without asking, per the Owner's standing "no preguntes qué tarea sigue" instruction and `AUTONOMY_PROTOCOL.md`.
 
-133 tests passing, 97% coverage, clean `ruff check`, clean `ruff format --check`, clean `mypy`. See `docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md` for the full write-up.
+Scope explicitly limited to **design and preparation only**: VPS threat model, unprivileged service user design, directory structure, filesystem isolation, `terminal.cwd`/`terminal.home_mode` configuration design, egress allowlist, firewall design, systemd unit design, backups, logs, health checks, update/rollback procedure, profile separation, secret-injection design with no real secrets, `ict-trading` profile package design, installation runbook, uninstall/rollback runbook.
 
-Status during the PR:
-```text
-Governance Core implementation skeleton: in review
-Governance Core production implementation: not started
-```
-Not marked `done` until the PR is merged and CI-verified.
+Must **not** connect to, provision, or modify any real VPS — that sub-scope requires separate Owner authorization per the task's own `owner_decision_required` split (`false` for design/preparation, `true` for any real VPS action).

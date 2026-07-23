@@ -1,7 +1,13 @@
 # NEXT
 
-**`HERMES-DEP-001` — Secure Hermes VPS deployment package**
+**`ICT-KNOW-001` — ICT source inventory and canonical knowledge pack**
 
-See `BACKLOG.md`. Becomes a `ready` candidate once `GOV-IMP-001` is merged and its PR checks are verified green. Must not be started on `feature/governance-core-skeleton`. Designing/preparing the package needs no further Owner decision; connecting to or modifying a real VPS does (`owner_decision_required` is split: `false` for design/preparation, `true` for any real VPS action).
+See `BACKLOG.md`. Blocked on the Owner confirming where the existing ICT source projects/documents live — cannot be scoped until then.
 
-Also confirmed in `BACKLOG.md`, further downstream: `ICT-KNOW-001` (blocked on Owner confirming source-document location), `ICT-AGENT-001` (blocked on `HERMES-DEP-001` + `ICT-KNOW-001` + authorized Hermes install + approved Governance tests), `CONTROL-UI-001` (blocked on Governance/Hermes contracts + approved Stitch designs).
+**`ICT-AGENT-001` — Hermes ICT Trading read-only profile**
+
+Blocked on `HERMES-DEP-001` (design/preparation, currently in progress, plus a separate, future Owner authorization for any real VPS action), `ICT-KNOW-001`, an authorized Hermes installation, and approved Governance tests.
+
+**`CONTROL-UI-001` — IIOS Mission Control MVP**
+
+Blocked on Governance contracts, Hermes contracts, and approved Stitch designs.
