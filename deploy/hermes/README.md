@@ -42,6 +42,10 @@ deploy/hermes/
   profiles/
     ict-trading.profile.json           — IIOS deployment manifest (not native Hermes config)
     ict-trading.config.yaml.template   — the real Hermes config.yaml fragment this maps to
+    onyx/
+      onyx.profile.json                — Executive Orchestrator manifest (docs/32),
+                                          specification only — no config.yaml counterpart,
+                                          no materializer, different path root (flagged)
   runbooks/
     INSTALL.md
     UNINSTALL_ROLLBACK.md

@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased — ONYX Executive Orchestrator specification (ONYX-CORE-001)
+
+- Added `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`: ONYX as the persistent-agent operationalization of the pre-existing `BRAIN-COO` (`docs/BRAIN_REGISTRY.md`), specifying its mission, ONYX v0.1 ("Executive Observer") read-only authority list, permanent prohibitions (never modifies Charter/Constitution/Kernel, never self-approves, fails closed if Governance is unavailable), model-routing-only model access (no hardcoded provider/model), a future materialization pipeline (not implemented), a future workspace design under `/srv/iios/profiles/onyx/` (not created on any real system — flagged as inconsistent with `deploy/hermes/`'s established `/opt/hermes/profiles/<name>/` convention), and a future executive-briefing report format that separates verified facts, ONYX's own analysis, other agents' attributed proposals, and the Owner's reserved decision.
+- Added `deploy/hermes/profiles/onyx/onyx.profile.json`: an IIOS deployment manifest (not native Hermes config, same pattern as `ict-trading.profile.json`) — `status: specified`, `activation_state: not_activated`, `execution_mode: read_only`, empty `capabilities`/`tools`/`secrets`, and every action gate (`financial_execution`, `self_approval`, `main_merge`, `release_creation`, `vps_modification`) `false`.
+- Added `AGENT-ONYX` to `docs/AGENT_REGISTRY.md` (`parent_brain: BRAIN-COO`), explicitly distinguished from the pre-existing `AGENT-ORCHESTRATOR` (subordinate directly to Governance for already-approved-objective decomposition — ONYX sits one level up as the Owner-facing entry point).
+- Noted ONYX in `docs/TOOL_REGISTRY.md`'s Hermes entry (`planned_first_profiles`, alongside `ict-trading`) and in `docs/HANDOFF_PROTOCOL.md` (anticipated originator role, not implemented — ONYX v0.1 has no write capability of any kind) and `docs/31_HERMES_DEPLOYMENT_PACKAGE.md` (new section 19).
+- Added `docs/14_ACCEPTANCE_TESTS.md` — "ONYX Executive Orchestrator (ONYX-CORE-001, specification only)".
+- Added `BACKLOG.md` entries `ONYX-CORE-001`, `ONYX-GOV-001`, `ONYX-BUILD-001` (all `blocked_by_dependency`), per the Owner's explicit sequence: Hermes base installed -> `ONYX-CORE-001` -> `ONYX-GOV-001` -> `ONYX-BUILD-001` -> `ICT-KNOW-001` -> `ICT-AGENT-001`. Reordered `ICT-KNOW-001` after `ONYX-BUILD-001` in that dependency chain (its Owner-confirmed-source-location gate is unchanged and independent). Added a minimal-ONYX-chat requirement to `CONTROL-UI-001`, flagging that the Owner's instruction referred to it as "CONTROL-UI-BOOT-001" — no such ID exists in this backlog; recorded on the existing entry rather than inventing a possibly-duplicate one.
+- Extended `scripts/verify_foundation.py` to require `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md` and `deploy/hermes/profiles/onyx/onyx.profile.json`, and to assert the manifest's read-only/not-activated field values structurally, not just presence.
+- Status:
+  ```text
+  COO Brain: specified, not implemented (pre-existing)
+  ONYX: specified, not implemented, not activated
+  Hermes: deployment package in review, runtime not installed
+  ```
+- **ONYX was not implemented, installed, or activated. No profile was started. No real VPS was touched.**
+
 ## Unreleased — Hermes VPS deployment package (HERMES-DEP-001)
 
 - Added `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` (**Proposed**): dedicated unprivileged `hermes` service user, Docker Compose + systemd supervision, no public listener, default-deny egress allowlist, explicit `terminal.cwd`/`terminal.home_mode`, two-layer filesystem isolation (application + host), out-of-band secret injection, encrypted scheduled backups, pinned-version update/rollback, read-only `ict-trading` first profile.

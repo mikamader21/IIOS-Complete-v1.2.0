@@ -139,6 +139,10 @@ future_integration: Planned for Phase 6, after Governance Core (Phase 3) and Dev
 deployment_package: Designed, not installed — `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`,
   `deploy/hermes/` (HERMES-DEP-001). No real VPS provisioned or modified; status here
   is unchanged by that design work.
+planned_first_profiles: `ict-trading` (read-only prop-firm/trading observability) and
+  `onyx` (Executive Orchestrator — `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`,
+  `deploy/hermes/profiles/onyx/onyx.profile.json`). Both `specified`/`designed`, neither
+  `activated` — status here is unchanged by either specification.
 ```
 
 ```text

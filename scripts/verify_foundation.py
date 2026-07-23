@@ -92,6 +92,8 @@ required = [
     "deploy/hermes/runbooks/UPDATE_ROLLBACK.md",
     "deploy/hermes/runbooks/BACKUP_RESTORE.md",
     "deploy/hermes/runbooks/HEALTH_CHECKS.md",
+    "docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md",
+    "deploy/hermes/profiles/onyx/onyx.profile.json",
 ]
 errors = []
 for rel in required:
@@ -135,8 +137,10 @@ json_required = [
     "governance/policy-bundles/mvp/policy.json",
     "governance/policy-bundles/mvp/manifest.json",
     "deploy/hermes/profiles/ict-trading.profile.json",
+    "deploy/hermes/profiles/onyx/onyx.profile.json",
 ]
 schema_files = {f for f in json_required if f.startswith("governance/schemas/")}
+onyx_manifest_path = "deploy/hermes/profiles/onyx/onyx.profile.json"
 for rel in json_required:
     try:
         parsed = json.loads((root / rel).read_text(encoding="utf-8"))
@@ -145,6 +149,37 @@ for rel in json_required:
         continue
     if rel in schema_files and parsed.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
         errors.append(f"{rel} does not declare Draft 2020-12 $schema")
+    if rel == onyx_manifest_path:
+        # ONYX v0.1 ("Executive Observer") must stay structurally read-only and
+        # not-activated — this is not just documentation prose, it is
+        # mechanically checked so a future edit cannot silently loosen it.
+        expected_scalars = {
+            "status": "specified",
+            "activation_state": "not_activated",
+            "execution_mode": "read_only",
+        }
+        for field, expected in expected_scalars.items():
+            if parsed.get(field) != expected:
+                errors.append(f"{rel}: {field} must be {expected!r}, got {parsed.get(field)!r}")
+        for field in ("capabilities", "tools", "secrets"):
+            if parsed.get(field) != []:
+                errors.append(f"{rel}: {field} must be an empty list, got {parsed.get(field)!r}")
+        for flag in (
+            "financial_execution", "self_approval", "main_merge",
+            "release_creation", "vps_modification",
+        ):
+            if parsed.get(flag) is not False:
+                errors.append(f"{rel}: {flag} must be false, got {parsed.get(flag)!r}")
+        terminal = parsed.get("terminal", {})
+        if terminal.get("backend") != "local":
+            errors.append(f"{rel}: terminal.backend must be 'local', got {terminal.get('backend')!r}")
+        if terminal.get("home_mode") != "profile":
+            errors.append(f"{rel}: terminal.home_mode must be 'profile', got {terminal.get('home_mode')!r}")
+        if terminal.get("docker_forward_env") != []:
+            errors.append(
+                f"{rel}: terminal.docker_forward_env must be an empty list, "
+                f"got {terminal.get('docker_forward_env')!r}"
+            )
 
 _SKIP_DIR_NAMES = {
     ".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".mypy_cache",

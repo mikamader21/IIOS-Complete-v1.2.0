@@ -58,6 +58,10 @@ This mirrors the Governance Core's action-request/capability shape deliberately 
 - Hermes does not receive standing credentials through a handoff; per-task capabilities only, once Governance Core capability issuance exists.
 - A handoff to Hermes for anything Class C or D follows the same Approval Service path any other Class C/D request would (`docs/24_APPROVAL_MODEL.md`) — Hermes does not bypass approval by virtue of being the execution runtime.
 
+## ONYX's anticipated role (not implemented)
+
+`docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md` specifies ONYX as the intended primary Owner-facing coordinator once activated — the party most likely to originate a handoff to a Hermes profile or to `AGENT-ORCHESTRATOR` for decomposition. ONYX v0.1 ("Executive Observer") cannot originate a real handoff at all — it has no write capability of any kind (`deploy/hermes/profiles/onyx/onyx.profile.json` — `execution_mode: "read_only"`). This section records the anticipated shape only; no handoff mechanism exists yet for anyone to use.
+
 ## Status
 
 Not implemented. Hermes is not integrated (`docs/TOOL_REGISTRY.md`). This document specifies the contract Phase 6 will build against.

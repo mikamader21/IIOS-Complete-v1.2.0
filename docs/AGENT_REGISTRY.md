@@ -25,6 +25,45 @@ Specify, before any agent file exists, the two agent categories IIOS uses and th
 ## Persistent roles
 
 ```text
+agent_id: AGENT-ONYX
+parent_brain: BRAIN-COO
+mission: Executive Orchestrator — the Owner's primary point of communication with IIOS as
+  a whole; receives objectives, consults system state and Governance, selects which Brain/
+  agent/skill/workflow is relevant, synthesizes results, and delivers executive reports.
+  Full specification: docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md.
+scope: v0.1 ("Executive Observer") is strictly read-only — see docs/32 section "Initial
+  authority" for the full allow/deny list. Distinct from and one level above
+  AGENT-ORCHESTRATOR, which decomposes an already-approved objective into subtasks; ONYX
+  identifies which objective/Brain/agent path applies in the first place and may delegate
+  decomposed execution to AGENT-ORCHESTRATOR in a future version, not duplicate it.
+tools: Read access to PROJECT_STATE.md, BACKLOG.md, work/, ratified docs, agent/Brain/
+  profile registries. No write tool of any kind in v0.1.
+memory: Episodic Memory (conversation/session history) only in v0.1; no Owner Profile write
+  access.
+skills: governance (consumption, not authoring), documentation (read/report only).
+permissions: None beyond read access in v0.1 — deploy/hermes/profiles/onyx/onyx.profile.json
+  fixes capabilities, tools, and secrets to empty lists and every action-gate boolean
+  (financial_execution, self_approval, main_merge, release_creation, vps_modification) to
+  false.
+prohibitions: Cannot modify Charter/Constitution/Kernel; cannot self-approve; cannot ignore
+  a Governance denial; cannot alter or delete an audit record; cannot conceal an incident
+  from the Owner; cannot read a secret; cannot perform any financial action; cannot declare
+  a specified-only Brain/agent as operational. Fails closed if Governance is unavailable.
+  Full list: docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md — "Permanent prohibitions".
+inputs_outputs: Input: Owner objectives, system/Governance state. Output: executive reports
+  (docs/32 — "Executive report format"), task recommendations, proposed (not applied)
+  changes.
+duration: Persistent once activated (not before — docs/TOOL_REGISTRY.md's Hermes entry
+  remains not integrated; activation additionally requires HERMES-DEP-001 merged, a healthy
+  Hermes installation, ADR-0013 ratified, and explicit Owner authorization to connect to a
+  real VPS — BACKLOG.md ONYX-CORE-001).
+budget: Per docs/12_COST_GOVERNANCE.md; no self-set limit.
+completion_criteria: Not applicable — persistent role.
+escalation: Any Governance-unavailable condition, incident, or agent disagreement is
+  surfaced to the Owner explicitly, never silently resolved or hidden.
+```
+
+```text
 agent_id: AGENT-ORCHESTRATOR
 parent_brain: none — subordinate directly to Governance per docs/21_GOVERNANCE_CORE_SPEC.md
   "Orchestrator Boundary" and ADR-0009
