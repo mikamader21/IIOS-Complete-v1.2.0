@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/capability-protected-header.schema.json",
+  "title": "IIOS Capability JWS Protected Header",
+  "description": "The DECODED shape of a capability's JWS Protected Header (RFC 7515 section 4). On the wire this JSON object is RFC 8785 canonicalized where applicable, Base64URL-encoded without padding, and forms the first segment of the JWS Compact Serialization token in governance/schemas/capability-token.schema.json. There is no JWS Unprotected Header in this profile.",
+  "type": "object",
+  "required": ["alg", "kid", "typ"],
+  "additionalProperties": false,
+  "properties": {
+    "alg": {
+      "const": "Ed25519",
+      "description": "The fully-specified JOSE algorithm identifier for Ed25519 (RFC 9864), not the polymorphic 'EdDSA' identifier. This is the ONLY value ever valid for new IIOS capability issuance; the verifier allowlist contains exactly this one value. See docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md — Capability envelope format."
+    },
+    "kid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifies which Ed25519 signing key was used. Mandatory protected-header parameter — never an external/unprotected field. Single active signer during MVP; see docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md — Key custody."
+    },
+    "typ": {
+      "const": "iios-capability+jws",
+      "description": "Identifies this token type, mandatory protected-header parameter."
+    }
+  }
+}

@@ -26,9 +26,12 @@ required = [
     "governance/schemas/action-request.schema.json",
     "governance/schemas/policy-decision.schema.json",
     "governance/schemas/approval.schema.json",
+    "governance/schemas/capability-claims.schema.json",
+    "governance/schemas/capability-protected-header.schema.json",
     "governance/schemas/capability-token.schema.json",
     "governance/schemas/audit-event.schema.json",
     "governance/schemas/kill-switch-event.schema.json",
+    "docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md",
 ]
 errors = []
 for rel in required:
@@ -63,6 +66,8 @@ json_required = [
     "governance/schemas/action-request.schema.json",
     "governance/schemas/policy-decision.schema.json",
     "governance/schemas/approval.schema.json",
+    "governance/schemas/capability-claims.schema.json",
+    "governance/schemas/capability-protected-header.schema.json",
     "governance/schemas/capability-token.schema.json",
     "governance/schemas/audit-event.schema.json",
     "governance/schemas/kill-switch-event.schema.json",

@@ -35,7 +35,7 @@ The approver authenticates on a channel independent from whatever produced the r
 
 ## Expiration
 
-Every approval carries `expires_at`, set at creation. Proposed default TTL (Open question for the Owner, `docs/21_GOVERNANCE_CORE_SPEC.md` item 3): 24 hours for a typical Class C action, shorter for higher-risk resource types (e.g. production deployment, secret rotation) at the policy author's discretion via `docs/22_POLICY_ENGINE_EVALUATION.md` rule conditions. An approval that hits `expires_at` while still `pending` transitions to `expired` and cannot be approved after the fact — a fresh action-request is required.
+Every approval carries `expires_at`, set at creation. **Resolved by Owner decision** (`docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md` — Class C approvals): default TTL **15 minutes**; maximum **60 minutes**, and only for reversible actions in non-production environments — a higher-risk resource type (e.g. production deployment, secret rotation) must not use the 60-minute ceiling, at the policy author's discretion via `docs/22_POLICY_ENGINE_EVALUATION.md` rule conditions but never exceeding it. An approval that hits `expires_at` while still `pending` transitions to `expired` and cannot be approved after the fact — a fresh action-request is required.
 
 ## Rejection
 
@@ -47,7 +47,7 @@ The approver role (Owner or delegated Approval Authority) may revoke an `approve
 
 ## Multi-person approval
 
-Supported structurally via `required_approvals` and `decisions[]` but defaults to `required_approvals: 1` (Owner) for MVP. Not activated for any case in the 20-case matrix; reserved for a future ratified policy that names a specific higher-risk action requiring it (Open question 4, `docs/21_GOVERNANCE_CORE_SPEC.md`).
+Supported structurally via `required_approvals` and `decisions[]` but defaults to `required_approvals: 1` (Owner) for MVP. **Resolved by Owner decision** (ADR-0011 — Class C approvals): the MVP uses a single approver; `required_approvals > 1` remains part of the model but is explicitly deferred, not activated, for any case in the 20-case matrix. Reserved for a future ratified policy once a second approver role exists.
 
 ## Self-approval prevention
 

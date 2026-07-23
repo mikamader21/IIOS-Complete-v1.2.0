@@ -1,113 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://iios.internal/schemas/capability-token.schema.json",
-  "title": "IIOS Signed Capability Envelope",
-  "description": "A Capability Payload plus its cryptographic proof of issuance. See docs/23_CAPABILITY_MODEL.md. A valid envelope proves Governance issued this payload unmodified; it does NOT by itself prove the capability is currently usable — consumption state (revocation, uses-remaining, nonce reuse) is tracked server-side, keyed by capability_id, and is never part of this signed structure.",
+  "title": "IIOS Capability Wire Token",
+  "description": "The wire artifact presented at consumption time: a JWS Compact Serialization (RFC 7515) string. This schema validates SURFACE SHAPE ONLY — three Base64URL segments separated by two dots. It does NOT validate that the protected header decodes to governance/schemas/capability-protected-header.schema.json, that the payload decodes to governance/schemas/capability-claims.schema.json, or that the signature is cryptographically valid. Those checks are the Verification profile in docs/23_CAPABILITY_MODEL.md, run outside JSON Schema, not implemented in this change.",
   "type": "object",
-  "required": ["algorithm", "key_id", "payload", "signature"],
+  "required": ["format", "token"],
   "additionalProperties": false,
   "properties": {
-    "algorithm": {
-      "type": "string",
-      "description": "Signature algorithm identifier, e.g. 'Ed25519'. Concrete choice (JWS, PASETO, or a bespoke scheme) is an open question for the Owner and security review; see docs/23_CAPABILITY_MODEL.md Open questions.",
-      "$comment": "This schema fixes only that an algorithm identifier is present. It does not select, and must not be read as endorsing, a specific cryptographic format."
+    "format": {
+      "const": "jws-compact",
+      "description": "Fixed to the one wire format this profile supports: JWS Compact Serialization. No JWS JSON Serialization, no bespoke format."
     },
-    "key_id": {
+    "token": {
       "type": "string",
-      "description": "Identifies which signing key was used, for rotation and verification key lookup."
-    },
-    "payload": {
-      "$ref": "#/$defs/capabilityPayload"
-    },
-    "signature": {
-      "type": "string",
-      "description": "Signature over the canonical serialization of `payload` only. Base64url-encoded or algorithm-appropriate encoding; concrete encoding is fixed once the algorithm decision (Open questions) is made."
+      "pattern": "^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$",
+      "description": "protected.payload.signature — exactly three Base64URL (unpadded) segments separated by '.'. protected decodes to capability-protected-header.schema.json; payload decodes to the RFC 8785 JCS serialization of capability-claims.schema.json.",
+      "$comment": "This pattern checks segment shape only (three dot-separated Base64URL groups). It cannot and does not verify that each segment decodes to valid JSON, that the decoded header/claims satisfy their respective schemas, or that the signature is valid — that is cryptographic and semantic validation, explicitly out of scope for JSON Schema and not implemented here."
     }
   },
-  "$defs": {
-    "capabilityPayload": {
-      "type": "object",
-      "title": "IIOS Capability Payload",
-      "description": "The signed claims. Immutable once issued. Consumption state (uses_remaining, revoked) is deliberately NOT part of this object — see docs/23_CAPABILITY_MODEL.md 'What is NOT in the payload, and why'.",
-      "required": [
-        "capability_id",
-        "issuer",
-        "subject",
-        "audience",
-        "action",
-        "resource",
-        "environment",
-        "policy_version",
-        "issued_at",
-        "not_before",
-        "expires_at",
-        "max_uses",
-        "correlation_id",
-        "nonce"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "capability_id": { "type": "string", "format": "uuid" },
-        "issuer": {
-          "type": "string",
-          "description": "Identifies the Governance API instance/environment that issued this payload."
-        },
-        "subject": {
-          "type": "string",
-          "description": "Bound actor. Not transferable to another actor."
-        },
-        "audience": {
-          "type": "string",
-          "description": "The executor/service this capability is valid for. Prevents a capability issued for one execution surface being replayed against a different one."
-        },
-        "action": {
-          "type": "string",
-          "description": "verb:resource_type, e.g. 'merge:git_protected_branch'."
-        },
-        "resource": {
-          "type": "string",
-          "description": "Concrete resource_ref. Exact match required at consumption."
-        },
-        "environment": {
-          "type": "string",
-          "enum": ["local", "staging", "production", "n/a"]
-        },
-        "policy_version": {
-          "type": "string",
-          "description": "Policy this payload was evaluated and issued under; checked against the currently active policy_version at consumption, not only at issuance."
-        },
-        "approval_id": {
-          "type": ["string", "null"],
-          "format": "uuid",
-          "description": "Required (non-null) for any capability derived from a Class C action item."
-        },
-        "issued_at": { "type": "string", "format": "date-time" },
-        "not_before": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Capability is not valid before this instant."
-        },
-        "expires_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "MUST be short-lived and close to issued_at. Exact ceiling per class is an Owner-configured policy parameter, not hardcoded here."
-        },
-        "max_uses": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "Intended use ceiling declared at issuance. The LIVE remaining-use count is server-side state keyed by capability_id, not a field in this payload — see docs/23_CAPABILITY_MODEL.md."
-        },
-        "constraints": {
-          "type": "object",
-          "description": "Additional scope-narrowing conditions the executor must satisfy, e.g. max amount, allowed commit SHA.",
-          "additionalProperties": true
-        },
-        "correlation_id": { "type": "string", "format": "uuid" },
-        "nonce": {
-          "type": "string",
-          "description": "Unique per issuance. Combined with capability_id, detects replay of an already-consumed capability independent of the server-side use counter."
-        }
-      }
-    }
-  }
+  "$comment": "Deliberately absent by design: 'algorithm' and 'key_id' as external fields (alg/kid live only inside the signed protected header, never unprotected — see docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md), any separate 'signature' field (it is the token string's third segment, not a sibling property), and any decoded payload duplicated alongside the token (decoding is a verification-time operation, not a stored shape)."
 }

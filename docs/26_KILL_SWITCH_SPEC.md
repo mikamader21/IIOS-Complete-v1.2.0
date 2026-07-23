@@ -39,7 +39,15 @@ Recovery is a distinct, explicitly authenticated action (`action: recover` in `k
 
 ## Periodic testing
 
-Proposed cadence (Open question for the Owner, `docs/21_GOVERNANCE_CORE_SPEC.md` item 6): quarterly drill of at least L1 and L2 in a non-production environment, annual drill of L4/L5 including credential rotation, each drill producing its own `kill_switch_activated`/`kill_switch_recovered` event pair so the drill itself is auditable and distinguishable from a real incident (a `reason` field describing it as a drill).
+**Resolved by Owner decision** (`docs/ADR/ADR-0011-GOVERNANCE-MVP-OWNER-DECISIONS.md` — Kill Switch test cadence), superseding the quarterly/annual proposal previously open here:
+
+- **L1, L2**: monthly drill, staging.
+- **L3**: quarterly drill, staging.
+- **L4**: semiannual drill in staging, plus an annual tabletop exercise covering production.
+- **L5**: annual tabletop exercise.
+- A **real L5 activation drill** (not a tabletop) requires separate, explicit Owner authorization, independent of this standing cadence.
+
+Each drill produces its own `kill_switch_activated`/`kill_switch_recovered` event pair so the drill itself is auditable and distinguishable from a real incident (a `reason` field describing it as a drill).
 
 ## Relation to Governance and Audit
 
@@ -54,4 +62,4 @@ A kill-switch activation is not routed through the normal Policy Engine evaluati
 | Out-of-scope request | L2 active for profile P, new request from unrelated profile Q | Normal evaluation proceeds; not blocked by P's kill switch |
 | Attempted self-recovery by a runtime | Any non-Owner actor attempts a `recover` action | Rejected; `auth_method` for activation/recovery never accepts a `runtime` or `orchestrator` actor type |
 | Log deletion attempt during L5 | Any component attempts to delete/truncate audit storage while L5 is active | Rejected structurally; `logs_preserved` is non-negotiable at every level |
-| Drill vs. real incident | Scheduled quarterly L1/L2 drill | Same event schema, `reason` marks it as a drill; does not require incident postmortem, still fully audited |
+| Drill vs. real incident | Scheduled monthly L1/L2 drill (ADR-0011 cadence) | Same event schema, `reason` marks it as a drill; does not require incident postmortem, still fully audited |
