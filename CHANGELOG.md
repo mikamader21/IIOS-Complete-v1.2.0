@@ -1,8 +1,21 @@
 # Changelog
 
+## Unreleased — IIOS Autonomous Operating Layer
+
+- Added `OWNER_PROFILE.md`: stable professional/operational context for the Owner. No family, medical, or intimate data.
+- Added `AUTONOMY_PROTOCOL.md`: the normal build cycle, the explicit list of actions Claude does not need to ask authorization for, and the hard stop conditions (Charter/Constitution/Kernel change, financial permissions, secrets, spend, production deploy, destructive migration, financial operation, irreversible action, merge to `main`, release tag, ratified-document contradiction, Owner-only business decision, uncovered high risk, real technical blocker).
+- Added `MASTER_IMPLEMENTATION_PROGRAM.md`: 12 phases (0–11) from Foundation through Self-Evolution, each with objective, dependencies, artifacts, acceptance criteria, risks, authorization requirement, status, and definition of done. No dates.
+- Added `BACKLOG.md`: task-tracking format (`ID/title/phase/status/priority/dependencies/risk_class/owner_decision_required/deliverables/acceptance_tests`), seeded with `AOL-001` (this phase, `review`) and `GOV-IMP-001` (Governance Core implementation skeleton, `blocked` on `AOL-001`, additionally requiring separate Owner authorization to begin implementation).
+- Added `docs/DOMAIN_CATALOG.md`, `docs/BRAIN_REGISTRY.md` (14 Brains), `docs/AGENT_REGISTRY.md` (7 persistent roles + 9 ephemeral agent types), `docs/SKILL_CATALOG.md` (19 categories), `docs/WORKFLOW_REGISTRY.md` (16 workflows), `docs/TOOL_REGISTRY.md` (17 tool categories; Hermes, Graphify, Supabase, MetaApi, and Make.com explicitly marked not integrated), `docs/MODEL_ROUTING.md` (functional roles, complementing the existing tier-based `docs/06_MODEL_ROUTING.md`), `docs/MEMORY_ARCHITECTURE.md`, `docs/SELF_EVOLUTION_PROTOCOL.md`, `docs/HANDOFF_PROTOCOL.md` (Claude ↔ Hermes), `docs/AUTONOMY_ACCEPTANCE_TESTS.md`.
+- Added `work/NOW.md`, `work/NEXT.md`, `work/BLOCKED.md`, `work/DONE.md`, `work/README.md`.
+- Every Brain and Agent entry is `specified`/`not_implemented`; every Skill entry is `cataloged`. None is activated.
+- Updated `AGENTS.md` and `CLAUDE.md`: session-start reading order (`PROJECT_STATE.md` → `AUTONOMY_PROTOCOL.md` → `work/NOW.md` → `BACKLOG.md`), "do not ask what to do next while an authorized `ready` task exists," "do not interpret documentation status as implementation status," and a pointer to `OWNER_PROFILE.md` instead of an inline biography.
+- Extended `scripts/verify_foundation.py` to require presence of all Phase 2 artifacts.
+- No backend, database, migration, MCP, model call, service, connector, infrastructure, credential, or financial capability was implemented. No change to `docs/00_MASTER_CHARTER.md`, `docs/01_CONSTITUTION.md`, or `governance/invariant-kernel/invariants.json`.
+
 ## 1.3.0 — Governance Core Specification — 23 July 2026
 
-Documentation prepared for this version; tag `v1.3.0` is not yet created and publishes only after merge, green CI (Ubuntu + Windows), and post-merge verification.
+Tagged `v1.3.0` → `aa9ec6d66f4c7c84ee8218d3b5901d888086c76f`, after merge (PR #5) and green CI (Ubuntu + Windows) post-merge verification.
 
 - Added `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`: technical specification of the Governance API, Action Classifier, Orchestrator Boundary, Policy Engine, Capability Model (claims / protected header / wire token contracts), Approval Model, Audit Event Model (RFC 8785 recommended for canonicalization), and Kill Switch.
 - Added `docs/ADR/ADR-0010-GOVERNANCE-CORE-BOUNDARIES.md` recording the boundary decisions and discarded alternatives. **Ratified by the Owner, 23 July 2026.**

@@ -1,8 +1,12 @@
 @AGENTS.md
 @PROJECT_STATE.md
+@AUTONOMY_PROTOCOL.md
 
 # Claude Code-specific instructions
 
+- At session start (Phase 2 onward): read `PROJECT_STATE.md`, `AUTONOMY_PROTOCOL.md`, `work/NOW.md`, `BACKLOG.md`, then select the highest-priority `ready` task with resolved dependencies — see `AGENTS.md` — "Autonomous session start."
+- Do not ask the Owner what to do next while `BACKLOG.md` contains an authorized `ready` task; stop only at a real gate in `AUTONOMY_PROTOCOL.md`.
+- Do not interpret documentation status (`specified`, `cataloged`, `not_implemented`) as implementation status.
 - Use plan mode for architecture, security, permissions, data models, deployment, model routing, Vault/Graphify integration or changes spanning more than three files.
 - Read applicable governed documents before editing.
 - Prefer small, reviewable commits grouped by purpose.
