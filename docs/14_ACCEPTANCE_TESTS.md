@@ -48,6 +48,22 @@ Hermes command execution cannot read host secrets or paths outside approved moun
 - Stale/failed graph falls back to source reading.
 - Sync and backup restore tested separately.
 
+## Governance Core specification (not yet an implementation test)
+
+These are acceptance criteria for the *specification* in `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`; they do not exercise running software, since none exists yet.
+
+- Every one of the 20 mandatory decision cases resolves to exactly one class and one decision, with no case left ambiguous, including the `secret_value.read` / `secret_reference.use` split within case #10/#11.
+- Every schema in `governance/schemas/` passes **structural schema validation** (valid JSON, declared Draft 2020-12 `$schema`, internal `$ref` resolution) — not full Draft 2020-12 conformance or meta-schema validation; see `governance/schemas/README.md`.
+- No schema field or example instance contains a secret value, credential, or raw key.
+- The Action Classifier's deterministic table lookup is documented as authoritative over any `classifier_hint`.
+- The Policy Engine's precedence order places the Invariant Kernel above every policy rule, with no documented path for a rule to override a Kernel deny.
+- The Approval Model documents `approver_id != requested_by` as a Policy Engine and Approval Service check (not a JSON Schema constraint, which cannot express cross-field comparison), with reason code `SELF_APPROVAL_FORBIDDEN`.
+- The Capability Model fixes that no field of either the Capability Payload or the Signed Capability Envelope may carry a secret value.
+- The Audit Event Model's hash-chain definition specifies RFC 8785 (JSON Canonicalization Scheme) as the recommended canonicalization, explicitly distinguished from the Invariant Kernel's CRLF/LF file-portability normalization, which does not by itself canonicalize JSON semantically.
+- The Kill Switch's activation path is documented as independent of Governance API availability.
+- `scripts/verify_foundation.py` confirms presence of all `docs/21`-`docs/26`, `docs/ADR/ADR-0010-GOVERNANCE-CORE-BOUNDARIES.md`, and `governance/schemas/*.json` files.
+- `PROJECT_STATE.md` states "Governance Core: specified, not implemented" and does not claim any Governance service as built.
+
 ## Cost controls
 
 Per-task/daily/monthly caps block excess usage; retries/delegation terminate; actual responding model and cost are recorded.

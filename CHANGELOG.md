@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Governance Core specification
+
+- Added `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`: technical specification of the Governance API, Action Classifier, Orchestrator Boundary, Policy Engine, Capability Model, Approval Model, Audit Event Model, and Kill Switch.
+- Added `docs/ADR/ADR-0010-GOVERNANCE-CORE-BOUNDARIES.md` recording the boundary decisions and discarded alternatives.
+- Added `governance/schemas/` with six JSON Schema (Draft 2020-12) contracts: action-request, policy-decision, approval, capability-token, audit-event, kill-switch-event.
+- Extended `scripts/verify_foundation.py` to require the presence and JSON validity of the new documents and schemas.
+- No backend, database, migration, MCP, model call, service, or external connector was implemented. No change to `docs/00_MASTER_CHARTER.md`, `docs/01_CONSTITUTION.md`, or `governance/invariant-kernel/invariants.json`.
+- Status: **Governance Core: specified, not implemented.** Pending Owner review and ratification of ADR-0010 before any implementation work begins.
+
 ## 1.2.1 — 22 July 2026
 
 - Fixed cross-platform Invariant Kernel checksum verification: the manifest checksum is now computed over a canonical (CRLF/CR normalized to LF) text representation instead of raw working-tree bytes, so Windows checkouts with `core.autocrlf=true` no longer produce a false verification failure.

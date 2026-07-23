@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/action-request.schema.json",
+  "title": "IIOS Action Request",
+  "description": "A request submitted to the Governance API for classification and policy evaluation. Not an execution instruction: submitting this schema never causes an action to occur.",
+  "type": "object",
+  "required": [
+    "request_id",
+    "idempotency_key",
+    "correlation_id",
+    "actor",
+    "requested_at",
+    "items"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this request. Distinct from idempotency_key: two requests with the same idempotency_key are the same logical request replayed."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Caller-supplied key. Governance MUST return the original decision for a repeated key within the idempotency window instead of re-evaluating or duplicating a capability."
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Propagated unchanged across policy decision, approval, capability token and every resulting audit event."
+    },
+    "actor": {
+      "$ref": "#/$defs/actor"
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339, UTC, 'Z' suffix required."
+    },
+    "budget_context": {
+      "$ref": "#/$defs/budgetContext"
+    },
+    "classifier_hint": {
+      "type": "object",
+      "description": "Non-authoritative suggestion only. The Policy Engine MUST NOT treat this as the final class; see docs/21_GOVERNANCE_CORE_SPEC.md Action Classifier.",
+      "additionalProperties": false,
+      "properties": {
+        "suggested_class": {
+          "$ref": "#/$defs/actionClass"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "produced_by": {
+          "type": "string",
+          "description": "Model or component that produced the hint, e.g. 'model:sonnet-class' or 'rule:static-classifier'."
+        }
+      },
+      "required": ["suggested_class", "produced_by"]
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One or more atomic action items. Request-level class is the maximum (strictest) class across items unless a policy explicitly declares the request decomposable.",
+      "items": {
+        "$ref": "#/$defs/actionItem"
+      }
+    },
+    "decomposable": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, Governance MAY approve a subset of items independently. Default false: all-or-nothing."
+    }
+  },
+  "$defs": {
+    "actor": {
+      "type": "object",
+      "required": ["actor_id", "actor_type", "auth_method"],
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actor_type": {
+          "type": "string",
+          "enum": ["owner", "orchestrator", "runtime", "service", "hermes_profile", "claude_code", "claude_cowork"]
+        },
+        "auth_method": {
+          "type": "string",
+          "enum": ["owner_session", "service_identity", "signed_capability", "delegated_token"]
+        },
+        "on_behalf_of": {
+          "type": "string",
+          "description": "Set when a runtime acts under a delegated scope. Never implies expanded authority beyond the delegation record."
+        }
+      }
+    },
+    "actionClass": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D"],
+      "description": "A=automatic read-only, B=controlled reversible, C=explicit human approval, D=prohibited in current phase. Constitution Article IV."
+    },
+    "budgetContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task_id": { "type": "string" },
+        "profile": { "type": "string" },
+        "domain": { "type": "string" },
+        "estimated_cost": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$",
+          "description": "Decimal string, never float."
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      }
+    },
+    "actionItem": {
+      "type": "object",
+      "required": ["item_id", "verb", "resource_type", "resource_ref", "environment"],
+      "additionalProperties": false,
+      "properties": {
+        "item_id": { "type": "string", "minLength": 1 },
+        "verb": {
+          "type": "string",
+          "description": "Machine-readable verb, e.g. 'read', 'write', 'execute', 'deploy', 'merge', 'rotate', 'send', 'delete'. For secret-related requests, always one of the two distinct verbs 'secret_value.read' (disclosure; no class permits it) or 'secret_reference.use' (Class C, scoped use without disclosure) — never a generic 'read'/'access' on a secret resource_type. See docs/21_GOVERNANCE_CORE_SPEC.md 'Secret handling: value vs. reference'."
+        },
+        "resource_type": {
+          "type": "string",
+          "description": "e.g. 'prop_firm_account', 'git_branch', 'git_protected_branch', 'secret', 'api_key', 'mcp_connector', 'email', 'make_scenario', 'supabase_migration', 'constitution', 'invariant_kernel', 'audit_log', 'deployment_target'."
+        },
+        "resource_ref": {
+          "type": "string",
+          "description": "Concrete reference to the resource, e.g. repo/branch path, secret name, connector id. Never the secret value itself."
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["local", "staging", "production", "n/a"]
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Required for Class C and D items; recommended for all."
+        },
+        "risk_signals": {
+          "type": "array",
+          "description": "Attributes that may trigger reclassification, e.g. 'contains_secret_reference', 'touches_production', 'financial_write', 'irreversible'.",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

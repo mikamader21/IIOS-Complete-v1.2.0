@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/approval.schema.json",
+  "title": "IIOS Approval",
+  "description": "Record of a Class C approval request through its lifecycle. See docs/24_APPROVAL_MODEL.md.",
+  "type": "object",
+  "required": [
+    "approval_id",
+    "request_id",
+    "correlation_id",
+    "requested_by",
+    "state",
+    "created_at",
+    "expires_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "approval_id": { "type": "string", "format": "uuid" },
+    "request_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "requested_by": {
+      "type": "string",
+      "description": "actor_id of the requester. MUST NOT equal approved_by."
+    },
+    "required_approvals": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
+    "approver_roles": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["owner", "delegated_approval_authority"] },
+      "default": ["owner"]
+    },
+    "state": { "$ref": "#/$defs/approvalState" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "decided_at": { "type": ["string", "null"], "format": "date-time" },
+    "decisions": {
+      "type": "array",
+      "description": "One entry per approver when required_approvals > 1.",
+      "items": {
+        "type": "object",
+        "required": ["approver_id", "auth_method", "decision", "decided_at"],
+        "additionalProperties": false,
+        "properties": {
+          "approver_id": {
+            "type": "string",
+            "description": "The approving actor. See $comment: this schema does not and cannot enforce the self-approval rule.",
+            "$comment": "Policy rule (not schema-enforced): approver_id MUST NOT equal the sibling top-level property requested_by. JSON Schema Draft 2020-12 has no keyword to compare one property's value against another property elsewhere in the document, so this inequality cannot be expressed or validated here. It is enforced by the Policy Engine at decision time and re-checked by the Approval Service at consumption time; reason code SELF_APPROVAL_FORBIDDEN. See docs/24_APPROVAL_MODEL.md — Self-approval prevention."
+          },
+          "auth_method": {
+            "type": "string",
+            "enum": ["owner_session", "delegated_token"],
+            "description": "Authenticated on a channel independent from the requester's session."
+          },
+          "decision": { "type": "string", "enum": ["approved", "rejected"] },
+          "reason_code": { "type": "string" },
+          "decided_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "evidence_ref": {
+      "type": "string",
+      "description": "Reference to the action-request and policy-decision shown to the approver, so the decision is reproducible."
+    },
+    "revoked_at": { "type": ["string", "null"], "format": "date-time" },
+    "revoked_by": { "type": ["string", "null"] },
+    "revocation_reason": { "type": ["string", "null"] },
+    "consumed_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Set when a capability token issued from this approval was used. An approval moves to 'consumed' at most once unless it explicitly authorizes multiple uses."
+    }
+  },
+  "$defs": {
+    "approvalState": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "approved",
+        "rejected",
+        "expired",
+        "revoked",
+        "consumed"
+      ]
+    }
+  }
+}

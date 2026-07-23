@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/audit-event.schema.json",
+  "title": "IIOS Audit Event",
+  "description": "One entry in the append-only, hash-chained Audit log. See docs/25_AUDIT_EVENT_MODEL.md for the field-required-by-event_type table this schema enforces structurally for the most sensitive event types.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "actor",
+    "correlation_id",
+    "previous_event_hash",
+    "event_hash"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_type": { "$ref": "#/$defs/eventType" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "actor": {
+      "type": "string",
+      "description": "actor_id that caused the event. For system-generated events (e.g. governance_unavailable) use 'system:governance'."
+    },
+    "request_id": { "type": ["string", "null"], "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "action_class": {
+      "type": ["string", "null"],
+      "enum": ["A", "B", "C", "D", null]
+    },
+    "policy_version": { "type": ["string", "null"] },
+    "decision": {
+      "type": ["string", "null"],
+      "enum": ["allow", "deny", "require_approval", null]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "approval_id": { "type": ["string", "null"], "format": "uuid" },
+    "capability_id": { "type": ["string", "null"], "format": "uuid" },
+    "tool": {
+      "type": ["string", "null"],
+      "description": "Runtime tool/connector invoked, if any."
+    },
+    "resource": { "type": ["string", "null"] },
+    "result": {
+      "type": ["string", "null"],
+      "enum": ["success", "failure", "partial", "blocked", null]
+    },
+    "cost": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$",
+          "description": "Decimal string, never float."
+        },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+      },
+      "required": ["amount", "currency"]
+    },
+    "evidence": {
+      "type": ["object", "null"],
+      "description": "Pointers only (e.g. object storage keys, decision_id). Never raw secret values.",
+      "additionalProperties": true
+    },
+    "previous_event_hash": {
+      "type": ["string"],
+      "pattern": "^(0{64}|[a-f0-9]{64})$",
+      "description": "SHA-256 of the previous event in this chain. '0'*64 for the chain's genesis event.",
+      "$comment": "previous_event_hash IS included in the material hashed to produce this event's own event_hash. This schema fixes the field's shape only; it does not and cannot enforce the hashing procedure. See docs/25_AUDIT_EVENT_MODEL.md for the recommended canonicalization (RFC 8785 JCS, not implemented in this change) and full chain-verification procedure."
+    },
+    "event_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 over the canonical serialization of every other field in this event, including previous_event_hash but excluding event_hash itself.",
+      "$comment": "event_hash cannot be part of its own input. 'Canonical serialization' means RFC 8785 (JSON Canonicalization Scheme), recommended in docs/25_AUDIT_EVENT_MODEL.md but not implemented here. This field's regex pattern only validates that a value looks like a lowercase hex SHA-256 digest; it cannot validate that the digest was computed correctly, that a JCS-conformant serializer was used, or that the chain is untampered — those require the verification procedure in docs/25_AUDIT_EVENT_MODEL.md, run outside JSON Schema."
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "event_type": { "const": "policy_decision" } } },
+      "then": { "required": ["policy_version", "decision", "reason_codes"] }
+    },
+    {
+      "if": { "properties": { "event_type": { "enum": ["approval_requested", "approval_decided", "approval_expired", "approval_revoked"] } } },
+      "then": { "required": ["approval_id"] }
+    },
+    {
+      "if": { "properties": { "event_type": { "enum": ["capability_issued", "capability_consumed", "capability_revoked"] } } },
+      "then": { "required": ["capability_id"] }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "execution_result" } } },
+      "then": { "required": ["result", "tool", "resource"] }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "budget_exceeded" } } },
+      "then": { "required": ["cost"] }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "kernel_integrity_violation" } } },
+      "then": { "required": ["reason_codes"] }
+    }
+  ],
+  "$defs": {
+    "eventType": {
+      "type": "string",
+      "enum": [
+        "request_received",
+        "policy_decision",
+        "approval_requested",
+        "approval_decided",
+        "approval_expired",
+        "approval_revoked",
+        "capability_issued",
+        "capability_consumed",
+        "capability_revoked",
+        "execution_result",
+        "budget_exceeded",
+        "governance_unavailable",
+        "audit_unavailable",
+        "kill_switch_activated",
+        "kill_switch_recovered",
+        "kernel_integrity_violation"
+      ]
+    }
+  }
+}

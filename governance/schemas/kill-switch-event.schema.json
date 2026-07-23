@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/kill-switch-event.schema.json",
+  "title": "IIOS Kill Switch Event",
+  "description": "Activation or recovery of an emergency-control level. See docs/26_KILL_SWITCH_SPEC.md.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "level",
+    "action",
+    "scope",
+    "actor",
+    "auth_method",
+    "reason",
+    "timestamp",
+    "correlation_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "level": {
+      "type": "string",
+      "enum": ["L1", "L2", "L3", "L4", "L5"]
+    },
+    "action": {
+      "type": "string",
+      "enum": ["activate", "recover"]
+    },
+    "scope": {
+      "type": "object",
+      "required": ["scope_type"],
+      "additionalProperties": false,
+      "properties": {
+        "scope_type": {
+          "type": "string",
+          "enum": ["task", "runtime_profile", "all_workers", "credentials_and_egress", "full_isolation"]
+        },
+        "scope_ref": {
+          "type": ["string", "null"],
+          "description": "task_id or profile_id when scope_type requires one (L1, L2). Null for L3-L5."
+        }
+      }
+    },
+    "actor": {
+      "type": "string",
+      "description": "MUST be an Owner-authenticated identity for activation at any level, or an Owner/delegated Approval Authority identity for recovery."
+    },
+    "auth_method": {
+      "type": "string",
+      "enum": ["owner_session", "owner_out_of_band", "delegated_token"],
+      "description": "Kill-switch activation authentication is independent of Governance API availability; see docs/26_KILL_SWITCH_SPEC.md."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "effects": {
+      "type": "array",
+      "description": "Concrete effects executed, e.g. 'revoked_capabilities:42', 'schedulers_stopped:hermes-cron', 'egress_blocked:true'.",
+      "items": { "type": "string" }
+    },
+    "logs_preserved": {
+      "type": "boolean",
+      "const": true,
+      "description": "Always true. No kill-switch level may delete or truncate audit/log storage."
+    },
+    "recovery_of_event_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Set on a 'recover' event, pointing to the 'activate' event it closes."
+    }
+  }
+}
