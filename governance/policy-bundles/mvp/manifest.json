@@ -1,0 +1,10 @@
+{
+  "manifest_version": "1.0.0",
+  "policy_bundle": "policy.json",
+  "policy_version": "0.1.0-mvp",
+  "sha256": "cdd8186d126d0bc3a55397e82f3182d7ae53e3ccdf9431125ed1b067180dd89f",
+  "ratification_status": "proposed",
+  "ratified_by": null,
+  "ratified_at": null,
+  "notes": "MVP reference bundle for GOV-IMP-001 (implementation skeleton only). Format defined in ADR-0012 (Proposed, not Ratified). Checksum computed the same way as governance/invariant-kernel/manifest.json: SHA-256 over CRLF/CR-to-LF canonicalized bytes."
+}

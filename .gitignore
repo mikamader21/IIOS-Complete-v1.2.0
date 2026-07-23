@@ -30,6 +30,12 @@ __pycache__/
 .pytest_cache/
 .venv/
 *.pyc
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
 
 # Node
 node_modules/

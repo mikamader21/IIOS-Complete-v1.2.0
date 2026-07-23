@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/policy-bundle.schema.json",
+  "title": "IIOS Policy Bundle",
+  "description": "The MVP Policy Engine's closed, declarative rule format. See docs/22_POLICY_ENGINE_EVALUATION.md and docs/ADR/ADR-0012-POLICY-BUNDLE-FORMAT.md (Proposed). No code, scripts, or arbitrary expressions are representable in this schema — conditions use only the allowlisted operators below.",
+  "type": "object",
+  "required": ["schema_version", "policy_version", "default_decision", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "policy_version": { "type": "string" },
+    "default_decision": {
+      "const": "deny",
+      "description": "Deny-by-default is not configurable."
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_rules": { "type": "integer", "minimum": 1, "default": 200 },
+        "max_condition_depth": { "type": "integer", "minimum": 0, "default": 3 }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["id", "match", "action_class", "effect", "precedence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^POL-[A-Z0-9-]+$" },
+        "match": {
+          "type": "object",
+          "required": ["verb", "resource_type", "environment"],
+          "additionalProperties": false,
+          "properties": {
+            "verb": { "type": "string" },
+            "resource_type": { "type": "string" },
+            "environment": { "type": "string" }
+          },
+          "description": "Each field is an exact string or '*' (wildcard). Exact match is more specific than '*' at evaluation time."
+        },
+        "conditions": {
+          "type": "array",
+          "default": [],
+          "items": { "$ref": "#/$defs/condition" }
+        },
+        "action_class": { "type": "string", "enum": ["A", "B", "C", "D"] },
+        "effect": { "type": "string", "enum": ["allow", "deny", "require_approval"] },
+        "precedence": { "type": "integer", "minimum": 0 },
+        "offline_read_allowed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only meaningful for effect=allow, action_class=A rules: may this decision be served from a valid, unexpired cache when Governance itself is unreachable? Never true for B/C/D (docs/03_GOVERNANCE_SECURITY.md fail-closed rule)."
+        },
+        "reason_code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "description": "Optional explicit reason code this rule attaches to its decision, e.g. GOVERNANCE_MEDIATION_UNAVAILABLE for a Class C rule that is currently unexecutable (docs/21 case #14b)."
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "required": ["field", "op", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "type": "string", "description": "Dotted path into the action item, e.g. 'constraints.amount'." },
+        "op": {
+          "type": "string",
+          "enum": ["equals", "not_equals", "in", "not_in", "greater_than", "less_than", "matches_prefix"],
+          "description": "Closed allowlist. No other operator is representable — see docs/22_POLICY_ENGINE_EVALUATION.md Mandatory conditions."
+        },
+        "value": {}
+      }
+    }
+  }
+}

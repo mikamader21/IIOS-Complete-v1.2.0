@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased — Governance Core implementation skeleton (GOV-IMP-001)
+
+- Added `src/iios_governance/`: a local, deterministic, in-memory reference implementation of the ratified Governance Core specification — `domain/` (models, action_classifier, policy_engine, approval_service, capability_service, audit_chain, kill_switch, reason_codes, errors), `application/` (decision_pipeline, governance_service), `ports/` (9 Protocols), `adapters/memory/` and `adapters/filesystem/`. Governance decides; it never executes an external action — no HTTP transport, no database, no network call exists in this package.
+- Added `governance/schemas/policy-bundle.schema.json` and the MVP bundle `governance/policy-bundles/mvp/` (checksum-protected, same canonical-hash pattern as the Invariant Kernel). Format recorded in `docs/ADR/ADR-0012-POLICY-BUNDLE-FORMAT.md` (**Proposed**, not yet Ratified).
+- Added `tests/governance/`: 133 tests, 97% coverage, covering the 20 mandatory decision cases plus duplicate request/idempotency, ambiguous classification, self-approval rejection, expired/double-consumed approval, capability expiry/revocation/replay/algorithm-downgrade rejection (`EdDSA` explicitly denied), policy version mismatch, budget exceeded, Governance/audit unavailable, Kernel/policy-bundle tampering detection, Kill Switch L1-L5, and deterministic replay of decision. No test calls a network endpoint or depends on real wall-clock time.
+- No production cryptography: `DisabledSignatureVerifier` (fails closed with `CAPABILITY_CRYPTO_NOT_IMPLEMENTED`) is the only signature verifier wired into production code. No Ed25519 library, no RFC 8785 JCS library, no KMS/HSM/Vault integration.
+- Added `pyproject.toml` with pinned dependencies: `jsonschema==4.26.0` (`Draft202012Validator`), `pytest==9.1.1`, `pytest-cov==7.1.0`, `ruff==0.15.22`, `mypy==2.3.0`, `types-jsonschema==4.26.0.20260518` — all resolved from the live index during this task, not guessed.
+- Extended `.github/workflows/verify-foundation.yml` with a new `governance-tests` job (lint, format check, type check, pytest+coverage) on `ubuntu-latest` and `windows-latest`; the existing `verify` job is unchanged.
+- Added `docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md`: structure, evaluation flow, functional/simulated/not-implemented component breakdown, security boundaries, local test instructions.
+- Extended `.gitignore` for Python build/tooling artifacts (`*.egg-info/`, `.mypy_cache/`, `.ruff_cache/`, `.coverage`, `htmlcov/`, `build/`) and `scripts/verify_foundation.py`'s secret scan to skip them.
+- Status:
+  ```text
+  Governance Core implementation skeleton: in review
+  Governance Core production implementation: not started
+  ```
+
 ## Unreleased — IIOS Autonomous Operating Layer
 
 - Added `OWNER_PROFILE.md`: stable professional/operational context for the Owner. No family, medical, or intimate data.

@@ -1,17 +1,17 @@
 # IIOS Project State
 
-**Version:** 1.3.0 — Governance Core Specification (tagged, `v1.3.0` → `aa9ec6d66f4c7c84ee8218d3b5901d888086c76f`)
+**Version:** 1.3.0 — Governance Core Specification (tagged, `v1.3.0` → `aa9ec6d66f4c7c84ee8218d3b5901d888086c76f`); Governance Core implementation skeleton in review
 **Review date:** 23 July 2026
-**Phase:** 2 — Autonomous Operating Layer (see `MASTER_IMPLEMENTATION_PROGRAM.md`)
-**Status:** Foundation (Phase 0) and Governance Core Specification (Phase 1) complete and tagged (`v1.2.1`, `v1.3.0`). ADR-0010 and ADR-0011 are **ratified** by the Owner. Phase 2 (Autonomous Operating Layer — `OWNER_PROFILE.md`, `AUTONOMY_PROTOCOL.md`, `MASTER_IMPLEMENTATION_PROGRAM.md`, `BACKLOG.md`, the Brain/Agent/Skill/Workflow/Tool registries, memory and self-evolution protocols, `work/`) is in review.
+**Phase:** 3 — Governance Core Implementation (see `MASTER_IMPLEMENTATION_PROGRAM.md`)
+**Status:** Foundation (Phase 0), Governance Core Specification (Phase 1), and Autonomous Operating Layer (Phase 2) complete. Phase 2 merged (PR #6, commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`). ADR-0010 and ADR-0011 are **ratified**; ADR-0012 (policy bundle format) is **Proposed**. Phase 3's first task, `GOV-IMP-001` (Governance Core implementation skeleton — local, deterministic, in-memory reference implementation), is in review on `feature/governance-core-skeleton`, explicitly authorized by the Owner for skeleton scope only.
 
 ```text
 Governance Core specification: ratified
-Governance Core implementation: not started
-Autonomous Operating Layer: in review
+Governance Core implementation skeleton: in review
+Governance Core production implementation: not started
 ```
 
-No Governance API, Policy Engine, Approval Service, capability issuer, audit storage, or kill switch is implemented. No Brain or Agent is activated — every entry in `docs/BRAIN_REGISTRY.md` and `docs/AGENT_REGISTRY.md` is `specified`/`not_implemented`. These remain design contracts only until a separate, explicitly authorized implementation phase begins for each.
+No Governance API endpoint, database, Hermes, Brain, Agent, secret, cryptography, or external connector is implemented. `src/iios_governance/` is a local, deterministic, in-memory reference implementation with 133 passing tests, 97% coverage, clean lint/type-check — it is not a production system, has no network listener, and cannot execute any external action (Governance decides, it never executes). No Brain or Agent is activated — every entry in `docs/BRAIN_REGISTRY.md` and `docs/AGENT_REGISTRY.md` remains `specified`/`not_implemented`.
 
 ## Approved design direction proposed for ratification
 
@@ -29,7 +29,7 @@ No Governance API, Policy Engine, Approval Service, capability issuer, audit sto
 
 ## Current objective
 
-Define the documentary and operational layer (`AUTONOMY_PROTOCOL.md`, `BACKLOG.md`, `MASTER_IMPLEMENTATION_PROGRAM.md`) that lets Claude select, execute, validate, and deliver authorized work without per-file manual prompts, and specify — without activating — the Brain/Agent/Skill/Workflow architecture the rest of IIOS will be built on (`docs/BRAIN_REGISTRY.md`, `docs/AGENT_REGISTRY.md`, `docs/SKILL_CATALOG.md`, `docs/WORKFLOW_REGISTRY.md`, `docs/TOOL_REGISTRY.md`, `docs/MODEL_ROUTING.md`, `docs/MEMORY_ARCHITECTURE.md`, `docs/SELF_EVOLUTION_PROTOCOL.md`, `docs/HANDOFF_PROTOCOL.md`). No Governance API, Policy Engine, database, Hermes, executable Brain, executable Agent, connector, MCP, secret, or productive infrastructure is implemented. `BACKLOG.md`'s first `ready`-after-this-phase task is `GOV-IMP-001` (Governance Core implementation skeleton), which requires its own separate Owner authorization to begin and must not start on this phase's branch.
+Prove the ratified Governance Core specification (`docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`) is implementable, deterministic, and testable, via `GOV-IMP-001`: a local `iios_governance` Python package (`src/iios_governance/`) implementing the Invariant Kernel loader, Action Classifier, Policy Engine, Approval state machine, Capability contracts, append-only audit hash chain, and Kill Switch L1-L5, wired together in `GovernanceService.evaluate()`. No production cryptography, no external providers, no database — every store is in-memory or a read-only, checksum-verified filesystem load. `BACKLOG.md`'s next task after this merges is `HERMES-DEP-001` (design/preparation only; connecting to or modifying a real VPS needs a separate Owner decision).
 
 ## Foundation acceptance criteria
 

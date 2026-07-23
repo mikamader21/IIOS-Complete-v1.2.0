@@ -1,7 +1,14 @@
 # NOW
 
-**Autonomous Operating Layer (`AOL-001`) is in review.**
+**`GOV-IMP-001` — Governance Core implementation skeleton — `review`.**
 
-Branch `feature/autonomous-operating-layer` is prepared with all Phase 2 artifacts (`OWNER_PROFILE.md`, `AUTONOMY_PROTOCOL.md`, `MASTER_IMPLEMENTATION_PROGRAM.md`, `BACKLOG.md`, the 11 `docs/` registries/protocols, `work/`). A Pull Request has been opened (or its manual link left prepared, if `gh` was unavailable) against `main`. No merge has occurred yet — merge requires separate, explicit Owner authorization per `AUTONOMY_PROTOCOL.md`.
+Branch `feature/governance-core-skeleton`, authorized by the Owner's "AUTORIZACIÓN DEL OWNER — PHASE 3" instruction (23 July 2026), scope explicitly limited to a local, deterministic, in-memory reference implementation (`src/iios_governance/`) with no production cryptography, no external providers, no database, and no execution of actions.
 
-Nothing else is in progress concurrently.
+133 tests passing, 97% coverage, clean `ruff check`, clean `ruff format --check`, clean `mypy`. See `docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md` for the full write-up.
+
+Status during the PR:
+```text
+Governance Core implementation skeleton: in review
+Governance Core production implementation: not started
+```
+Not marked `done` until the PR is merged and CI-verified.
