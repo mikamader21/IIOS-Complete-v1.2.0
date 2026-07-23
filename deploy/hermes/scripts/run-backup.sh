@@ -1,44 +1,43 @@
 #!/usr/bin/env bash
-# Template — not executed by HERMES-DEP-001. Review before installing.
+# Template — not executed by HERMES-DEP-001/HERMES-INSTALL-001-preparation.
+# Review before installing.
 #
-# Uses the OFFICIAL `hermes backup` command (confirmed against
-# NousResearch/hermes-agent's CLI reference and community-verified `-o`
-# output flag, consulted 2026-07-23 against release v0.19.0, 2026-07-20)
-# instead of a raw tar of arbitrary host paths — hermes backup already
-# knows what belongs in a coherent backup (config, skills, sessions, data)
-# and excludes the agent codebase itself, so it will not sweep up a cache
-# or virtualenv the way a naive `tar` of the whole state directory could.
+# Backs up the ONE shared Hermes data volume (/opt/hermes/data on the host,
+# bind-mounted to /opt/data in the container), covering every co-located
+# profile in a single archive. This is a host-level file copy, not a
+# `docker exec ... hermes backup` call — the topology reconciliation
+# (docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md Amendment 2) confirmed
+# that /opt/hermes/data IS Hermes' entire mutable state (config, .env,
+# sessions, memories, skills, per-profile subtrees); the immutable
+# application code, venv, and node_modules live inside the image itself at
+# /opt/hermes, never on this bind-mounted volume, so a plain tar of
+# /opt/hermes/data cannot accidentally sweep up a cache or venv — the
+# earlier per-profile-container design used the official `hermes backup`
+# CLI specifically to avoid that risk; this design achieves the same
+# guarantee structurally, without needing docker exec or the `docker`
+# group membership trade-off that entailed.
 #
-# Installed to /opt/hermes/core/compose/scripts/run-backup.sh and invoked
-# by systemd/hermes-backup.service on the HOST — it shells into the
-# running container via `docker compose exec`, it does not run `hermes`
-# directly (the CLI is not installed on the host, only inside the image).
+# WARNING: this archive contains live secrets once any profile is actually
+# activated with real credentials — Hermes' own .env files are part of its
+# state by design (upstream: "Secrets and tokens -> ~/.hermes/.env", backed
+# up and restorable). Nothing is activated as of this design task, so no
+# real secret exists yet, but treat the resulting archive as sensitive from
+# the first real activation onward — see runbooks/BACKUP_RESTORE.md.
 
 set -euo pipefail
 
-COMPOSE_DIR="/opt/hermes/core/compose"
-PROFILE="ict-trading"
+DATA_DIR="/opt/hermes/data"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-# -o targets a path under /opt/data (the container's HERMES_HOME, bind-
-# mounted from the host's state/ directory per
-# deploy/hermes/core/docker-compose.yml.template) so the resulting archive
-# is visible on the host without a separate `docker cp` step.
-CONTAINER_OUTPUT="/opt/data/backups/hermes-backup-${STAMP}.zip"
-HOST_STATE_DIR="/opt/hermes/profiles/${PROFILE}/state"
 HOST_BACKUPS_DIR="/opt/hermes/backups"
 
-cd "$COMPOSE_DIR"
-mkdir -p "${HOST_STATE_DIR}/backups"
-
-# --quick is a state-only snapshot; a full (non --quick) backup is used
-# here instead so config, skills, and sessions are captured, not only
-# state — confirm this trade-off (full vs --quick) against the observed
-# archive size/time before relying on this in a real recurring job.
-docker compose exec -T "$PROFILE" hermes backup -o "$CONTAINER_OUTPUT"
+if [[ ! -d "$DATA_DIR" ]]; then
+  echo "FAIL: $DATA_DIR does not exist — nothing to back up." >&2
+  exit 1
+fi
 
 mkdir -p "$HOST_BACKUPS_DIR"
-mv "${HOST_STATE_DIR}/backups/hermes-backup-${STAMP}.zip" "${HOST_BACKUPS_DIR}/"
+tar -czf "${HOST_BACKUPS_DIR}/hermes-data-${STAMP}.tar.gz" -C "$(dirname "$DATA_DIR")" "$(basename "$DATA_DIR")"
 
-echo "Backup complete: ${HOST_BACKUPS_DIR}/hermes-backup-${STAMP}.zip"
+echo "Backup complete: ${HOST_BACKUPS_DIR}/hermes-data-${STAMP}.tar.gz"
 echo "Transport to an external, encrypted destination is not implemented here — select a destination/tool (work/BLOCKED.md) and extend this script before first real use."
-echo "NOTE: the exact internal container user hermes-agent runs as, and whether it can write to /opt/data/backups/ with the permissions this script assumes, was not independently confirmed against a running instance during this design task — verify with 'docker compose exec ict-trading whoami' and a real dry run before enabling the schedule."
+echo "NOTE: from the first real profile activation onward this archive contains live secrets (each activated profile's .env) — encrypt at rest and restrict access accordingly."

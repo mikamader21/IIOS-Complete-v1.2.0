@@ -38,3 +38,10 @@ Completed phases and tasks, for continuity across sessions. `MASTER_IMPLEMENTATI
   Governance Core implementation skeleton: done
   Governance Core production implementation: not started
   ```
+
+## Phase 6 — Hermes Runtime Integration (deployment preparation)
+
+- `HERMES-DEP-001` merged: PR #10, merge commit `fff907f84a5917489c02447965ee78b8ad0ea25c`. CI verified green — 5/5 checks (`verify` ubuntu/windows, `governance-tests` ubuntu/windows, `hermes-deployment-tests`), run `30051091906`. Design/preparation-only Hermes VPS deployment package (`deploy/hermes/`), audited pre-merge against the real `NousResearch/hermes-agent` product.
+- Post-merge topology reconciliation (before any real VPS install): re-verified the exact upstream release/Docker-digest pin (v0.19.0, tag `v2026.7.20`, commit `3ef6bbd201263d354fd83ec55b3c306ded2eb72a`, digest `sha256:a6ce64e2038867885c2c90f6602425e6e70293d5e6d952a0e603a99265e01c40` linux/amd64) across three independent official sources, and corrected the deployment topology from one-container-per-profile to one container hosting multiple s6-supervised profiles, matching the product's own current recommendation. `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` set to **Ratified** (deployment preparation only — not financial execution, not unrestricted agent activation).
+- ONYX (Executive Orchestrator) specified as the first planned profile (`docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`, `deploy/hermes/profiles/onyx/onyx.profile.json`) — `AGENT-ONYX` added to `docs/AGENT_REGISTRY.md`, operationalizing the pre-existing `BRAIN-COO`. `ict-trading` remains a future profile.
+- No Hermes runtime installed. No profile activated. No real VPS touched at any point. Next: `HERMES-INSTALL-001` (`BACKLOG.md`, `blocked_by_owner_vps_details`).

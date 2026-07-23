@@ -1,10 +1,14 @@
 # NEXT
 
-**`ONYX-CORE-001` — ONYX Executive Observer profile**
+**`HERMES-INSTALL-001` — Install pinned Hermes base on authorized VPS**
 
-See `BACKLOG.md`. Specification, manifest, and registry work done (`docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`, `deploy/hermes/profiles/onyx/onyx.profile.json`, `AGENT-ONYX` in `docs/AGENT_REGISTRY.md`). `blocked_by_dependency`: `HERMES-DEP-001` merged and verified, Hermes base installed and healthy, ADR-0013 ratified, and explicit Owner authorization to connect to a real VPS.
+`blocked_by_owner_vps_details`. The Owner has authorized VPS purchase and preparation; installation itself waits on: reconciled deployment package merged and CI green (this task), Ubuntu provisioned, the Owner supplying non-secret VPS metadata (IP/hostname, architecture, provider), and confirmed SSH public-key access. Creates the `onyx` profile (per `deploy/hermes/runbooks/INSTALL.md`) but does not activate it.
 
-Downstream per the Owner's explicit sequence (23 July 2026): `ONYX-CORE-001` -> `ONYX-GOV-001` (connect ONYX to Governance and Audit) -> `ONYX-BUILD-001` (Developer Brain delegation bridge) -> `ICT-KNOW-001` (reordered) -> `ICT-AGENT-001`.
+**`ONYX-CORE-001` — ONYX Executive Observer profile (activation)**
+
+Blocked on `HERMES-INSTALL-001` completed, `hermes doctor` passed, the container healthy, a verified backup baseline, and a real (executed, not conceptual) Governance fail-closed test — tightened from the original dependency list in the topology reconciliation (23 July 2026).
+
+Downstream, per the Owner's explicit sequence: `ONYX-CORE-001` -> `ONYX-GOV-001` (connect ONYX to Governance and Audit) -> `ONYX-BUILD-001` (Developer Brain delegation bridge) -> `ICT-KNOW-001` (reordered) -> `ICT-AGENT-001`.
 
 **`ICT-KNOW-001` — ICT source inventory and canonical knowledge pack**
 
@@ -12,7 +16,7 @@ Reordered after `ONYX-BUILD-001`. Also still blocked on the Owner confirming whe
 
 **`ICT-AGENT-001` — Hermes ICT Trading read-only profile**
 
-Blocked on `HERMES-DEP-001` (design/preparation done, in review; a separate, future Owner authorization is needed for any real VPS action), `ICT-KNOW-001`, an authorized Hermes installation, and approved Governance tests.
+Blocked on `HERMES-DEP-001` (done), `ICT-KNOW-001`, an authorized Hermes installation, and approved Governance tests. `ict-trading` is a future profile inside the same shared Hermes container as `onyx`, not activated by any task so far.
 
 **`CONTROL-UI-001` — IIOS Mission Control MVP**
 

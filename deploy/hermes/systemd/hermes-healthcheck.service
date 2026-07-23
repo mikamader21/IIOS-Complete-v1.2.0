@@ -1,17 +1,24 @@
-# Template — not installed by HERMES-DEP-001. Review before copying to /etc/systemd/system/.
+# Template — not installed by HERMES-DEP-001/HERMES-INSTALL-001-preparation.
+# Review before copying to /etc/systemd/system/.
 #
 # One-shot liveness check, triggered by hermes-healthcheck.timer. Only
 # observes and logs — it never restarts anything itself; recovery is
-# Docker's own `restart: unless-stopped` policy on the ict-trading
-# container (see deploy/hermes/core/docker-compose.yml.template — there is
-# no custom gateway-supervising systemd unit in this package). See
+# Docker's own `restart: unless-stopped` policy plus the image's own
+# built-in s6-overlay supervision (see
+# deploy/hermes/core/docker-compose.yml.template — there is no custom
+# gateway-supervising systemd unit in this package). See
 # deploy/hermes/runbooks/HEALTH_CHECKS.md.
 #
-# Same docker-group trade-off as hermes-backup.service — see that unit's
-# comment.
+# REQUIRES the `hermes` service user to be in the host's `docker` group so
+# it can run `docker exec`/`docker inspect`/`docker logs` against the
+# shared container — effectively root-equivalent via docker.sock, a real,
+# accepted trade-off (docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md).
+# Unlike hermes-backup.service (host-level tar since the topology
+# reconciliation), this job genuinely needs container access for
+# `hermes doctor`/`gateway status`.
 
 [Unit]
-Description=Hermes health check (docker compose exec hermes doctor/status)
+Description=Hermes health check (docker exec hermes doctor / per-profile gateway status)
 Documentation=file:///opt/hermes/runbooks/HEALTH_CHECKS.md
 After=docker.service
 Requires=docker.service
@@ -20,11 +27,11 @@ Requires=docker.service
 Type=oneshot
 User=hermes
 Group=hermes
-WorkingDirectory=/opt/hermes/core/compose
+WorkingDirectory=/opt/hermes
 ExecStart=/opt/hermes/core/compose/scripts/run-healthcheck.sh
 
 NoNewPrivileges=yes
 ProtectSystem=strict
-ReadOnlyPaths=/opt/hermes/core/compose
+ReadOnlyPaths=/opt/hermes/data
 ReadWritePaths=/opt/hermes/logs
 ProtectHome=yes

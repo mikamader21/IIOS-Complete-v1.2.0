@@ -18,7 +18,7 @@ fi
 directories=(
   "$BASE/core/compose"
   "$BASE/core/secrets"
-  "$BASE/profiles"
+  "$BASE/data"
   "$BASE/backups"
   "$BASE/logs"
 )
@@ -33,4 +33,4 @@ done
 chmod 0700 "$BASE/core/secrets"
 
 echo "Bootstrapped $BASE (owner $SERVICE_USER, 0750 default, 0700 for core/secrets)"
-echo "Create a profile with: mkdir -p $BASE/profiles/<name>/{workspace,state} && chown -R $SERVICE_USER:$SERVICE_USER $BASE/profiles/<name> && chmod 0750 $BASE/profiles/<name> $BASE/profiles/<name>/workspace $BASE/profiles/<name>/state"
+echo "$BASE/data is the ONE shared Hermes HERMES_HOME (bind-mounted to /opt/data in the container) — do not create per-profile subdirectories manually. Profiles are created via 'docker exec hermes hermes profile create <name>' after the container is running (see runbooks/INSTALL.md)."

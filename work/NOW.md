@@ -1,21 +1,13 @@
 # NOW
 
-**`HERMES-DEP-001` — Secure Hermes VPS deployment package — `review`.**
+**Hermes topology reconciliation — `review`, branch `fix/hermes-upstream-topology`.**
 
-Branch `feature/hermes-deployment-package`. Dependency `GOV-IMP-001` satisfied: PR #7 merged (commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`), CI verified green (4/4 checks, run `30047219545`). Task selected without asking, per the Owner's standing "no preguntes qué tarea sigue" instruction and `AUTONOMY_PROTOCOL.md`.
+`HERMES-DEP-001` merged to `main` (PR #10, merge commit `fff907f84a5917489c02447965ee78b8ad0ea25c`, CI verified green 5/5). Before any real VPS installation, the Owner ordered a second reconciliation: re-verify the exact upstream Hermes release/Docker-image pin (resolving the Owner's own "v0.18.2 appears latest" observation — a stale/pre-propagation read, not an error; v0.19.0/tag `v2026.7.20`/commit `3ef6bbd201263d354fd83ec55b3c306ded2eb72a` is confirmed current across three independent official sources) and correct the deployment topology from one-container-per-profile to **one container hosting multiple s6-supervised profiles**, matching the product's own current official recommendation.
 
-All eighteen design/preparation deliverables complete and then **audited by the Owner against the real `NousResearch/hermes-agent` product** (v0.19.0, 2026-07-20, consulted 2026-07-23) before merge — the audit found and required fixing a fabricated "worker" systemd unit, a gateway-supervising unit duplicating Docker's own `restart: unless-stopped`, an invalid `terminal.home_mode` value, an ambiguous IIOS-manifest-vs-Hermes-config framing, a raw-tar backup duplicating the official `hermes backup` command, and an unsafe default-apply firewall script. All corrected — see `docs/31_HERMES_DEPLOYMENT_PACKAGE.md` — "Corrections after upstream audit".
+`docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` updated with the verified pin, the corrected topology, an explicit "Real isolation boundaries" table (co-located-profile separation is application-layer only, not OS/container-layer), and a documented-but-unexercised "Future dedicated-container option" for high-risk profiles — then set to **Ratified** ("for controlled VPS deployment preparation... does not authorize financial execution or unrestricted agent activation").
 
-Package: `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`, `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` (Proposed), and `deploy/hermes/` — service-user and directory-bootstrap scripts, a pinned single-container-per-profile Docker Compose template, two systemd timers (backup via the official `hermes backup` CLI, health check via `hermes doctor`/`hermes gateway status`), a dry-run-by-default UFW firewall script with a rollback safety net, a three-file secret-injection design (no real secret), the first Hermes deployment (`ict-trading`, read-only, no order endpoint, `terminal.backend: local`), and five runbooks. A new `hermes-deployment-tests` CI job validates the package (`bash -n`, ShellCheck, `systemd-analyze verify`, line-endings, credential-shape scan, financial-execution structural check).
+Every affected file under `deploy/hermes/` was updated to match: Compose template (pinned by digest, no published ports, native healthcheck), `onyx`/`ict-trading` manifests (shared-volume paths), backup script (now a plain host-level tar, no `docker` group needed), health-check script (loops profiles), all five runbooks, `docs/14_ACCEPTANCE_TESTS.md`, `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`.
 
-Status:
-```text
-HERMES-DEP-001: in review
-VPS installation: not authorized
-Hermes runtime: not installed
-ict-trading profile: specified, not activated
-```
+`BACKLOG.md`: `HERMES-DEP-001` marked `done`; added `HERMES-INSTALL-001` (`blocked_by_owner_vps_details` — the Owner authorized VPS purchase, but installation itself waits on non-secret VPS metadata and confirmed SSH access); tightened `ONYX-CORE-001`'s dependencies (install completed, `hermes doctor` passed, container healthy, backup baseline, real Governance fail-closed test).
 
-**No real VPS was provisioned, connected to, or modified. No script under `deploy/hermes/` was executed against a real host.** That sub-scope requires a separate, explicit Owner authorization. Not marked `done` until merged and CI-verified.
-
-**Added to the same branch, same PR, per a separate Owner directive (23 July 2026):** ONYX specification — `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`, `deploy/hermes/profiles/onyx/onyx.profile.json`, `AGENT-ONYX` in `docs/AGENT_REGISTRY.md`, and three new `blocked_by_dependency` backlog entries (`ONYX-CORE-001`, `ONYX-GOV-001`, `ONYX-BUILD-001`, see `work/NEXT.md`). Specification only — ONYX was not implemented, installed, or activated; no profile was started; no VPS was touched.
+**No real VPS was provisioned, connected to, or modified. No script under `deploy/hermes/` was executed against a real host. No profile was activated.** Not marked `done` until merged and CI-verified.
