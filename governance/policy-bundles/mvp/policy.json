@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.0.0",
+  "policy_version": "0.1.0-mvp",
+  "default_decision": "deny",
+  "limits": {
+    "max_rules": 200,
+    "max_condition_depth": 3
+  },
+  "rules": [
+    {
+      "id": "POL-PROPFIRM-READ",
+      "match": { "verb": "read", "resource_type": "prop_firm_account", "environment": "*" },
+      "action_class": "A",
+      "effect": "allow",
+      "precedence": 100,
+      "offline_read_allowed": true
+    },
+    {
+      "id": "POL-DRAWDOWN-COMPUTE",
+      "match": { "verb": "compute", "resource_type": "drawdown_calculation", "environment": "*" },
+      "action_class": "A",
+      "effect": "allow",
+      "precedence": 100,
+      "offline_read_allowed": true
+    },
+    {
+      "id": "POL-VAULT-QUERY",
+      "match": { "verb": "query", "resource_type": "vault_note", "environment": "*" },
+      "action_class": "A",
+      "effect": "allow",
+      "precedence": 100,
+      "offline_read_allowed": true
+    },
+    {
+      "id": "POL-MAKE-LIST-META",
+      "match": { "verb": "list", "resource_type": "make_scenario_metadata", "environment": "*" },
+      "action_class": "A",
+      "effect": "allow",
+      "precedence": 100,
+      "offline_read_allowed": true
+    },
+    {
+      "id": "POL-MAKE-QUERY-META",
+      "match": { "verb": "query", "resource_type": "make_scenario_metadata", "environment": "*" },
+      "action_class": "A",
+      "effect": "allow",
+      "precedence": 100,
+      "offline_read_allowed": true
+    },
+    {
+      "id": "POL-GIT-BRANCH-CREATE",
+      "match": { "verb": "create", "resource_type": "git_branch", "environment": "*" },
+      "action_class": "B",
+      "effect": "allow",
+      "precedence": 100
+    },
+    {
+      "id": "POL-CODE-EDIT",
+      "match": { "verb": "edit", "resource_type": "code", "environment": "*" },
+      "action_class": "B",
+      "effect": "allow",
+      "precedence": 100
+    },
+    {
+      "id": "POL-GIT-MERGE-PROTECTED",
+      "match": { "verb": "merge", "resource_type": "git_protected_branch", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100
+    },
+    {
+      "id": "POL-DEPLOY-PROD",
+      "match": { "verb": "deploy", "resource_type": "production_target", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100
+    },
+    {
+      "id": "POL-SECRET-REF-USE",
+      "match": { "verb": "secret_reference.use", "resource_type": "secret", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100,
+      "reason_code": "SECRET_REFERENCE_APPROVAL_REQUIRED"
+    },
+    {
+      "id": "POL-SECRET-REF-USE-APIKEY",
+      "match": { "verb": "secret_reference.use", "resource_type": "api_key", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100,
+      "reason_code": "SECRET_REFERENCE_APPROVAL_REQUIRED"
+    },
+    {
+      "id": "POL-APIKEY-ROTATE",
+      "match": { "verb": "rotate", "resource_type": "api_key", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100
+    },
+    {
+      "id": "POL-MCP-ACTIVATE",
+      "match": { "verb": "activate", "resource_type": "mcp_connector", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100
+    },
+    {
+      "id": "POL-EMAIL-SEND",
+      "match": { "verb": "send", "resource_type": "email", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100
+    },
+    {
+      "id": "POL-MAKE-RUN",
+      "match": { "verb": "run", "resource_type": "make_scenario", "environment": "*" },
+      "action_class": "C",
+      "effect": "deny",
+      "precedence": 100,
+      "reason_code": "GOVERNANCE_MEDIATION_UNAVAILABLE"
+    },
+    {
+      "id": "POL-MAKE-ACTIVATE",
+      "match": { "verb": "activate", "resource_type": "make_scenario", "environment": "*" },
+      "action_class": "C",
+      "effect": "deny",
+      "precedence": 100,
+      "reason_code": "GOVERNANCE_MEDIATION_UNAVAILABLE"
+    },
+    {
+      "id": "POL-MAKE-DEACTIVATE",
+      "match": { "verb": "deactivate", "resource_type": "make_scenario", "environment": "*" },
+      "action_class": "C",
+      "effect": "deny",
+      "precedence": 100,
+      "reason_code": "GOVERNANCE_MEDIATION_UNAVAILABLE"
+    },
+    {
+      "id": "POL-MAKE-EDIT",
+      "match": { "verb": "edit", "resource_type": "make_scenario", "environment": "*" },
+      "action_class": "C",
+      "effect": "deny",
+      "precedence": 100,
+      "reason_code": "GOVERNANCE_MEDIATION_UNAVAILABLE"
+    },
+    {
+      "id": "POL-MAKE-CREATE",
+      "match": { "verb": "create", "resource_type": "make_scenario", "environment": "*" },
+      "action_class": "C",
+      "effect": "deny",
+      "precedence": 100,
+      "reason_code": "GOVERNANCE_MEDIATION_UNAVAILABLE"
+    },
+    {
+      "id": "POL-SUPABASE-MIGRATE",
+      "match": { "verb": "migrate", "resource_type": "supabase_schema", "environment": "*" },
+      "action_class": "C",
+      "effect": "require_approval",
+      "precedence": 100
+    }
+  ]
+}

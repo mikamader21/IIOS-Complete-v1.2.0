@@ -76,6 +76,22 @@ Gateway stop, key revocation, scheduler disable, egress block and backup restore
 
 Full acceptance criteria live in `docs/AUTONOMY_ACCEPTANCE_TESTS.md`. Summary — Claude selects the next unblocked `ready` `BACKLOG.md` task without asking; stops only at a real `AUTONOMY_PROTOCOL.md` gate (Charter/Constitution/Kernel change, financial action, secrets, merge to `main`, release tag, ratified-document contradiction); never presents a `specified`/`cataloged`/`not_implemented` Brain, Agent, or Skill as running; never invents Owner context beyond `OWNER_PROFILE.md`/`PROJECT_STATE.md`; never treats Graphify as authoritative.
 
+## Governance Core implementation skeleton (GOV-IMP-001)
+
+This IS an implementation test — `tests/governance/` is real, running code, not a specification. Acceptance evidence: 133 tests passing, 97% coverage, clean `ruff check`/`ruff format --check`/`mypy`, on both Ubuntu and Windows CI. Full detail in `docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md`.
+
+- The 20 mandatory decision cases from `docs/21_GOVERNANCE_CORE_SPEC.md` each resolve to exactly the documented class and decision, exercised end-to-end through `GovernanceService.evaluate()`.
+- The Invariant Kernel loader rejects a missing, malformed, or checksum-mismatched Kernel; it never modifies the Kernel files.
+- The deterministic Action Classifier never consults `classifier_hint`; unmatched actions never resolve to Class A.
+- The Policy Engine is deny-by-default, exact-match beats wildcard, and a Kernel match short-circuits rule evaluation — a misconfigured policy rule cannot override a Kernel deny.
+- The Approval state machine structurally rejects `approver_id == requested_by`, enforces TTL expiry, and prevents double consumption.
+- Capability consumption follows the exact 8-step order from `docs/23_CAPABILITY_MODEL.md`; `alg: "EdDSA"` is rejected (`CAPABILITY_ALGORITHM_DENIED`); a valid signature over a revoked or already-consumed capability is still denied.
+- The audit hash chain detects tampering (mutated field, reordered events) via chain re-verification; the genesis event uses the `'0'*64` sentinel.
+- The Kill Switch rejects activation/recovery from any non-Owner-grade `auth_method`; L3-L5 block every scope, L1/L2 block only the matching scope.
+- Fail-closed is demonstrated for: Kernel unavailable/mismatched, policy bundle unavailable/invalid, Governance unavailable (Class A continues only under an `offline_read_allowed` rule), audit unavailable (an would-be `allow` is overridden to `deny`), budget exceeded, kill switch active.
+- No test performs a network call; no test depends on real wall-clock time (every test uses an injectable `FixedClock`).
+- No production cryptography is implemented — `DisabledSignatureVerifier` is the only signature verifier wired into `GovernanceService`, and it always fails closed.
+
 ## Exit condition
 
 No unresolved Critical; High findings have accepted mitigation and Owner sign-off.

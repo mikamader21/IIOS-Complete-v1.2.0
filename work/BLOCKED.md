@@ -33,5 +33,7 @@ Integrations and decisions that cannot proceed without a credential, provider se
 
 - **First read-only domain confirmation** — proposed (FundingPips/prop-firm observability, `PROJECT_STATE.md`), not yet confirmed as final.
 - **Vault sync method** — separate from backup, undecided. `PROJECT_STATE.md`.
-- **Governance Core implementation authorization** — specification is ratified; implementation itself (`GOV-IMP-001`) additionally requires explicit authorization to begin, per `BACKLOG.md`.
+- ~~**Governance Core implementation authorization**~~ — **resolved** 23 July 2026, "AUTORIZACIÓN DEL OWNER — PHASE 3," scoped to the local skeleton only (`GOV-IMP-001`). Production implementation remains a separate future authorization.
 - **Make.com mutating-action integration** — structurally Class C pending live Governance mediation; not just a technical blocker, a standing policy gate (`docs/21_GOVERNANCE_CORE_SPEC.md` case #14b).
+- **Real VPS connection/modification for `HERMES-DEP-001`** — designing and preparing the deployment package needs no further decision; connecting to or modifying an actual VPS does.
+- **Source location for `ICT-KNOW-001`** — the Owner has not yet confirmed where the existing ICT source projects/documents live; the task cannot be scoped until then.

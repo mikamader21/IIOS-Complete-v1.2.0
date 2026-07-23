@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=69.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iios-governance"
+version = "0.1.0"
+description = "IIOS Governance Core — local, deterministic, fail-closed reference implementation skeleton. Evaluates action requests; never executes them."
+readme = "docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary — private IIOS repository" }
+dependencies = [
+    "jsonschema==4.26.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.15.22",
+    "mypy==2.3.0",
+    "types-jsonschema==4.26.0.20260518",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+source = ["src/iios_governance"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "src"
+explicit_package_bases = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+# Test functions taking pytest fixtures as bare parameters are not held to
+# the same strict-typing bar as src/iios_governance — the production
+# package (checked above) is where type discipline matters most.
+module = "tests.*"
+disallow_untyped_defs = false

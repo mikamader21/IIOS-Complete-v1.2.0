@@ -51,6 +51,22 @@ required = [
     "work/NEXT.md",
     "work/BLOCKED.md",
     "work/DONE.md",
+    "docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md",
+    "docs/ADR/ADR-0012-POLICY-BUNDLE-FORMAT.md",
+    "pyproject.toml",
+    "governance/schemas/policy-bundle.schema.json",
+    "governance/policy-bundles/mvp/policy.json",
+    "governance/policy-bundles/mvp/manifest.json",
+    "src/iios_governance/__init__.py",
+    "src/iios_governance/domain/models.py",
+    "src/iios_governance/domain/action_classifier.py",
+    "src/iios_governance/domain/policy_engine.py",
+    "src/iios_governance/domain/approval_service.py",
+    "src/iios_governance/domain/capability_service.py",
+    "src/iios_governance/domain/audit_chain.py",
+    "src/iios_governance/domain/kill_switch.py",
+    "src/iios_governance/application/governance_service.py",
+    "tests/governance/conftest.py",
 ]
 errors = []
 for rel in required:
@@ -90,6 +106,9 @@ json_required = [
     "governance/schemas/capability-token.schema.json",
     "governance/schemas/audit-event.schema.json",
     "governance/schemas/kill-switch-event.schema.json",
+    "governance/schemas/policy-bundle.schema.json",
+    "governance/policy-bundles/mvp/policy.json",
+    "governance/policy-bundles/mvp/manifest.json",
 ]
 schema_files = {f for f in json_required if f.startswith("governance/schemas/")}
 for rel in json_required:
@@ -101,8 +120,23 @@ for rel in json_required:
     if rel in schema_files and parsed.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
         errors.append(f"{rel} does not declare Draft 2020-12 $schema")
 
+_SKIP_DIR_NAMES = {
+    ".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".mypy_cache",
+    ".ruff_cache", "node_modules", ".next", "dist", "build",
+}
+
+
+def _is_skipped(path: Path) -> bool:
+    return any(part in _SKIP_DIR_NAMES or part.endswith(".egg-info") for part in path.parts)
+
+
 for path in root.rglob("*"):
-    if path.resolve() == Path(__file__).resolve() or not path.is_file() or path.stat().st_size >= 2_000_000:
+    if (
+        path.resolve() == Path(__file__).resolve()
+        or not path.is_file()
+        or path.stat().st_size >= 2_000_000
+        or _is_skipped(path)
+    ):
         continue
     try:
         text = path.read_text(encoding="utf-8")
