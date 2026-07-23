@@ -21,4 +21,20 @@ Completed phases and tasks, for continuity across sessions. `MASTER_IMPLEMENTATI
 
 ## Phase 2 — Autonomous Operating Layer
 
-- In review as of this entry — see `work/NOW.md`. Will be marked complete here once merged, per `AUTONOMY_PROTOCOL.md`'s documentation-vs-implementation discipline (this file records verified outcomes, not aspirations).
+- `AOL-001` merged: PR #6, commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`. CI verified green. `OWNER_PROFILE.md`, `AUTONOMY_PROTOCOL.md`, `MASTER_IMPLEMENTATION_PROGRAM.md`, `BACKLOG.md`, 11 registry/protocol docs under `docs/`, `work/` state files.
+- Branch `feature/autonomous-operating-layer` deleted (local and remote) after confirming the merge.
+
+## Phase 3 — Governance Core Implementation
+
+- `GOV-IMP-001` merged: PR #7, commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`. CI verified green — 4/4 checks (`verify` ubuntu/windows, `governance-tests` ubuntu/windows), run `30047219545`.
+- `src/iios_governance/`: local, deterministic, in-memory reference implementation of the ratified Governance Core specification — domain, application, ports, memory and filesystem adapters. 133 tests passing, 97% coverage, clean ruff/mypy. No production cryptography (`DisabledSignatureVerifier` fails closed), no database, no external providers, no action execution.
+- `governance/schemas/policy-bundle.schema.json` + `governance/policy-bundles/mvp/` (checksum-protected, 20 rules). `docs/ADR/ADR-0012-POLICY-BUNDLE-FORMAT.md` — **Proposed** (not yet ratified).
+- `docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md` written.
+- CI extended with a `governance-tests` job (ubuntu-latest + windows-latest); pre-existing `verify` job unchanged.
+- Branch `feature/governance-core-skeleton` deleted (local and remote) after confirming the merge.
+- Status:
+  ```text
+  Governance Core specification: ratified
+  Governance Core implementation skeleton: done
+  Governance Core production implementation: not started
+  ```

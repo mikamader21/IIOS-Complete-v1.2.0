@@ -1,0 +1,44 @@
+{
+  "profile_id": "ict-trading",
+  "status": "designed_not_activated",
+  "description": "First Hermes profile (PROJECT_STATE.md — Proposed first domain). Read-only prop-firm/trading observability. No order-capable credential, no order endpoint, no capability to place, modify, or cancel any trade.",
+  "filesystem": {
+    "root": "/opt/hermes/profiles/ict-trading",
+    "workspace": "/opt/hermes/profiles/ict-trading/workspace",
+    "state": "/opt/hermes/profiles/ict-trading/state",
+    "isolation_note": "Bind-mounted into this profile's Compose service only. No other profile mounts this path; this profile mounts no other profile's path."
+  },
+  "terminal": {
+    "backend": "docker",
+    "cwd": "/opt/hermes/profiles/ict-trading/workspace",
+    "home_mode": "profile_scoped",
+    "forwarded_env_allowlist": []
+  },
+  "data_scope": {
+    "allowed": [
+      "account_status",
+      "balance_equity",
+      "drawdown_rules",
+      "history",
+      "alerts",
+      "calendar"
+    ],
+    "prohibited": [
+      "order_placement",
+      "order_modification",
+      "order_cancellation",
+      "withdrawal",
+      "deposit",
+      "capital_transfer"
+    ]
+  },
+  "governance": {
+    "standing_capability": "none",
+    "note": "Every action this profile takes still requires a live Governance Core decision once Hermes is actually integrated (Phase 6). This package grants no capability by itself — src/iios_governance/ has no execution surface (docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md) and Hermes is not integrated (docs/TOOL_REGISTRY.md)."
+  },
+  "secrets": {
+    "source": "deploy/hermes/secrets/env.template#ICT_TRADING_DATA_PROVIDER_TOKEN",
+    "note": "Real value injected out-of-band on the host per deploy/hermes/secrets/README.md. Read-only data-provider token only — never an order-capable credential."
+  },
+  "constitutional_reference": "Article IV-D prohibits autonomous financial action; this profile's data scope has no path to violate that, independent of and in addition to Governance mediation."
+}

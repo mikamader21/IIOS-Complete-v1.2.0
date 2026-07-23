@@ -1,6 +1,23 @@
 # Changelog
 
-## Unreleased — Governance Core implementation skeleton (GOV-IMP-001)
+## Unreleased — Hermes VPS deployment package (HERMES-DEP-001)
+
+- Added `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` (**Proposed**): dedicated unprivileged `hermes` service user, Docker Compose + systemd supervision, no public listener, default-deny egress allowlist, explicit `terminal.cwd`/`terminal.home_mode`, two-layer filesystem isolation (application + host), out-of-band secret injection, encrypted scheduled backups, pinned-version update/rollback, read-only `ict-trading` first profile.
+- Added `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`: the design write-up covering all eighteen `HERMES-DEP-001` deliverables, a VPS threat model, and an explicit "what this task did not do" section.
+- Added `deploy/hermes/`: `README.md`, `directory-layout.md`; `scripts/` (`create-service-user.sh`, `bootstrap-directories.sh`, `run-backup.sh`, `run-healthcheck.sh`); `systemd/` (`hermes-gateway.service`, `hermes-worker.service`, `hermes-backup.service`+`.timer`, `hermes-healthcheck.service`+`.timer`); `firewall/` (`apply-ufw-rules.sh`, `egress-allowlist.md`); `secrets/` (`env.template` with placeholder values only, `README.md` describing the injection design); `profiles/ict-trading.profile.json` (read-only, no order endpoint, no standing Governance capability); `runbooks/` (`INSTALL.md`, `UNINSTALL_ROLLBACK.md`, `UPDATE_ROLLBACK.md`, `BACKUP_RESTORE.md`, `HEALTH_CHECKS.md`).
+- Extended `scripts/verify_foundation.py` to require presence of every file above and structurally validate `deploy/hermes/profiles/ict-trading.profile.json` as JSON.
+- Added a "Hermes VPS deployment package (HERMES-DEP-001)" section to `docs/14_ACCEPTANCE_TESTS.md`.
+- Noted the design package's existence in `docs/TOOL_REGISTRY.md`'s Hermes entry (`deployment_package` field) without changing its `status: not integrated`.
+- **No real VPS was provisioned, connected to, or modified. No script under `deploy/hermes/` was executed. No real secret, API key, or credential was created, requested, or stored.** Hermes remains not integrated; the `ict-trading` profile has no live connection to any account or data provider.
+- Status:
+  ```text
+  Hermes VPS deployment package: in review
+  Hermes runtime integration: not started
+  ```
+
+## Unreleased — Governance Core implementation skeleton (GOV-IMP-001) — merged
+
+Merged as PR #7 (commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`), CI verified green post-merge: 4/4 checks (`verify` ubuntu-latest/windows-latest, `governance-tests` ubuntu-latest/windows-latest), run `30047219545`. Branch `feature/governance-core-skeleton` deleted (local and remote) after verification.
 
 - Added `src/iios_governance/`: a local, deterministic, in-memory reference implementation of the ratified Governance Core specification — `domain/` (models, action_classifier, policy_engine, approval_service, capability_service, audit_chain, kill_switch, reason_codes, errors), `application/` (decision_pipeline, governance_service), `ports/` (9 Protocols), `adapters/memory/` and `adapters/filesystem/`. Governance decides; it never executes an external action — no HTTP transport, no database, no network call exists in this package.
 - Added `governance/schemas/policy-bundle.schema.json` and the MVP bundle `governance/policy-bundles/mvp/` (checksum-protected, same canonical-hash pattern as the Invariant Kernel). Format recorded in `docs/ADR/ADR-0012-POLICY-BUNDLE-FORMAT.md` (**Proposed**, not yet Ratified).
@@ -12,11 +29,11 @@
 - Extended `.gitignore` for Python build/tooling artifacts (`*.egg-info/`, `.mypy_cache/`, `.ruff_cache/`, `.coverage`, `htmlcov/`, `build/`) and `scripts/verify_foundation.py`'s secret scan to skip them.
 - Status:
   ```text
-  Governance Core implementation skeleton: in review
+  Governance Core implementation skeleton: done
   Governance Core production implementation: not started
   ```
 
-## Unreleased — IIOS Autonomous Operating Layer
+## Unreleased — IIOS Autonomous Operating Layer — merged
 
 - Added `OWNER_PROFILE.md`: stable professional/operational context for the Owner. No family, medical, or intimate data.
 - Added `AUTONOMY_PROTOCOL.md`: the normal build cycle, the explicit list of actions Claude does not need to ask authorization for, and the hard stop conditions (Charter/Constitution/Kernel change, financial permissions, secrets, spend, production deploy, destructive migration, financial operation, irreversible action, merge to `main`, release tag, ratified-document contradiction, Owner-only business decision, uncovered high risk, real technical blocker).
@@ -28,6 +45,7 @@
 - Updated `AGENTS.md` and `CLAUDE.md`: session-start reading order (`PROJECT_STATE.md` → `AUTONOMY_PROTOCOL.md` → `work/NOW.md` → `BACKLOG.md`), "do not ask what to do next while an authorized `ready` task exists," "do not interpret documentation status as implementation status," and a pointer to `OWNER_PROFILE.md` instead of an inline biography.
 - Extended `scripts/verify_foundation.py` to require presence of all Phase 2 artifacts.
 - No backend, database, migration, MCP, model call, service, connector, infrastructure, credential, or financial capability was implemented. No change to `docs/00_MASTER_CHARTER.md`, `docs/01_CONSTITUTION.md`, or `governance/invariant-kernel/invariants.json`.
+- Merged as PR #6 (commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`), CI verified green post-merge. Branch `feature/autonomous-operating-layer` deleted (local and remote) after verification.
 
 ## 1.3.0 — Governance Core Specification — 23 July 2026
 

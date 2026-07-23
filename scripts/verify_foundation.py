@@ -67,6 +67,30 @@ required = [
     "src/iios_governance/domain/kill_switch.py",
     "src/iios_governance/application/governance_service.py",
     "tests/governance/conftest.py",
+    "docs/31_HERMES_DEPLOYMENT_PACKAGE.md",
+    "docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md",
+    "deploy/hermes/README.md",
+    "deploy/hermes/directory-layout.md",
+    "deploy/hermes/scripts/create-service-user.sh",
+    "deploy/hermes/scripts/bootstrap-directories.sh",
+    "deploy/hermes/scripts/run-backup.sh",
+    "deploy/hermes/scripts/run-healthcheck.sh",
+    "deploy/hermes/systemd/hermes-gateway.service",
+    "deploy/hermes/systemd/hermes-worker.service",
+    "deploy/hermes/systemd/hermes-backup.service",
+    "deploy/hermes/systemd/hermes-backup.timer",
+    "deploy/hermes/systemd/hermes-healthcheck.service",
+    "deploy/hermes/systemd/hermes-healthcheck.timer",
+    "deploy/hermes/firewall/apply-ufw-rules.sh",
+    "deploy/hermes/firewall/egress-allowlist.md",
+    "deploy/hermes/secrets/env.template",
+    "deploy/hermes/secrets/README.md",
+    "deploy/hermes/profiles/ict-trading.profile.json",
+    "deploy/hermes/runbooks/INSTALL.md",
+    "deploy/hermes/runbooks/UNINSTALL_ROLLBACK.md",
+    "deploy/hermes/runbooks/UPDATE_ROLLBACK.md",
+    "deploy/hermes/runbooks/BACKUP_RESTORE.md",
+    "deploy/hermes/runbooks/HEALTH_CHECKS.md",
 ]
 errors = []
 for rel in required:
@@ -109,6 +133,7 @@ json_required = [
     "governance/schemas/policy-bundle.schema.json",
     "governance/policy-bundles/mvp/policy.json",
     "governance/policy-bundles/mvp/manifest.json",
+    "deploy/hermes/profiles/ict-trading.profile.json",
 ]
 schema_files = {f for f in json_required if f.startswith("governance/schemas/")}
 for rel in json_required:

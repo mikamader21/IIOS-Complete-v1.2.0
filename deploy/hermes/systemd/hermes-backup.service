@@ -1,0 +1,29 @@
+# Template — not installed by HERMES-DEP-001. Review before copying to /etc/systemd/system/.
+#
+# One-shot backup job, triggered by hermes-backup.timer. Backs up
+# /opt/hermes/core and /opt/hermes/profiles (excluding core/secrets — see
+# deploy/hermes/runbooks/BACKUP_RESTORE.md for why) to the configured
+# external, encrypted destination. The actual backup command is left as a
+# host-specific placeholder — this template does not select a backup tool
+# or destination, both are an open Owner decision (work/BLOCKED.md).
+
+[Unit]
+Description=Hermes backup job
+Documentation=file:///opt/hermes/runbooks/BACKUP_RESTORE.md
+
+[Service]
+Type=oneshot
+User=hermes
+Group=hermes
+WorkingDirectory=/opt/hermes
+# Placeholder — replace with the selected backup tool invocation once a
+# destination/tool is chosen. Must never include a credential inline; read
+# any needed credential from /opt/hermes/core/secrets/.env via EnvironmentFile.
+EnvironmentFile=/opt/hermes/core/secrets/.env
+ExecStart=/opt/hermes/core/compose/scripts/run-backup.sh
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/hermes/backups /opt/hermes/logs
+ReadOnlyPaths=/opt/hermes/core/compose /opt/hermes/profiles
+ProtectHome=yes
