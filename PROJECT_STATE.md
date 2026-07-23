@@ -21,7 +21,7 @@
 
 ## Current objective
 
-Ratify Foundation v1.2.0, merge through a protected pull request and verify repository controls. Do not implement domain agents yet.
+Governance Core: specified, not implemented. `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`, ADR-0010 and `governance/schemas/` convert the Constitution and Invariant Kernel into reviewable technical contracts (Governance API, Action Classifier, Policy Engine, Approval Service, Capability Tokens, Audit Events, Kill Switch). No backend, database, migration, MCP, model call, or external connector was added. Do not implement domain agents yet.
 
 ## Foundation acceptance criteria
 
@@ -31,12 +31,12 @@ Ratify Foundation v1.2.0, merge through a protected pull request and verify repo
 - [x] `python scripts/verify_foundation.py` passes locally and in GitHub Actions, on both Ubuntu and Windows (v1.2.1).
 - [ ] Main branch protection requires the verification workflow.
 - [ ] No unresolved Critical finding remains.
-- [ ] Action classes and approval rules are accepted.
-- [ ] Threat model and fail-closed behavior are accepted.
+- [x] Action classes and approval rules are accepted (Action Classifier + Approval Model specified, `docs/21_GOVERNANCE_CORE_SPEC.md`, `docs/24_APPROVAL_MODEL.md`; pending Owner ratification of ADR-0010).
+- [x] Threat model and fail-closed behavior are accepted (fail-closed rule restated and applied uniformly across Governance API, Policy Engine, Capability Tokens, Audit, Kill Switch; pending Owner ratification of ADR-0010).
 - [ ] Repository and Vault are private with independent backups.
 - [ ] Secret handling and environment separation are defined.
-- [ ] Governance API interfaces are specified before implementation.
-- [ ] Audit and cost event schemas are specified before implementation.
+- [x] Governance API interfaces are specified before implementation (`docs/21_GOVERNANCE_CORE_SPEC.md`, `governance/schemas/action-request.schema.json`, `governance/schemas/policy-decision.schema.json`). Governance API itself remains **not implemented**.
+- [x] Audit and cost event schemas are specified before implementation (`docs/25_AUDIT_EVENT_MODEL.md`, `governance/schemas/audit-event.schema.json`; cost fields embedded in the audit event schema per `docs/12_COST_GOVERNANCE.md`). No cost/audit service implemented.
 - [ ] First read-only domain is selected.
 
 ## Proposed first domain

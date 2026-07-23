@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://iios.internal/schemas/policy-decision.schema.json",
+  "title": "IIOS Policy Decision",
+  "description": "The deterministic output of the Policy Engine for one action-request. Reproducible from evidence plus policy_version alone.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "request_id",
+    "correlation_id",
+    "idempotency_key",
+    "policy_version",
+    "kernel_checksum",
+    "evaluated_at",
+    "item_decisions",
+    "overall_decision",
+    "reason_codes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "decision_id": { "type": "string", "format": "uuid" },
+    "request_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "idempotency_key": { "type": "string", "minLength": 1 },
+    "policy_version": {
+      "type": "string",
+      "description": "Version of the policy bundle evaluated, independent of kernel_checksum."
+    },
+    "kernel_checksum": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 (canonical, LF-normalized) of governance/invariant-kernel/invariants.json at evaluation time."
+    },
+    "evaluated_at": { "type": "string", "format": "date-time" },
+    "replayed": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this decision was served from the idempotency cache rather than freshly evaluated."
+    },
+    "overall_decision": {
+      "$ref": "#/$defs/decisionOutcome"
+    },
+    "item_decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["item_id", "action_class", "outcome", "reason_codes"],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": { "type": "string" },
+          "action_class": {
+            "type": "string",
+            "enum": ["A", "B", "C", "D"]
+          },
+          "outcome": { "$ref": "#/$defs/decisionOutcome" },
+          "reason_codes": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#/$defs/reasonCode" }
+          },
+          "matched_invariants": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^INV-[0-9]{3}$" }
+          },
+          "matched_rules": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "approval_id": {
+            "type": ["string", "null"],
+            "format": "uuid"
+          },
+          "capability_id": {
+            "type": ["string", "null"],
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/reasonCode" },
+      "description": "Request-level reason codes, e.g. when overall_decision differs from a simple aggregation (budget_exceeded, governance_degraded)."
+    },
+    "explanation": {
+      "type": "string",
+      "maxLength": 4000,
+      "description": "Human-readable rationale for operator display. Never authoritative; reason_codes and matched_rules are."
+    },
+    "fail_closed": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this decision was forced to deny/require_approval because a dependency (Kernel, policy store, budget service, audit sink) was unavailable."
+    }
+  },
+  "$defs": {
+    "decisionOutcome": {
+      "type": "string",
+      "enum": ["allow", "deny", "require_approval"]
+    },
+    "reasonCode": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+      "description": "Machine-readable, e.g. INVARIANT_MATCH, CLASS_D_PROHIBITED, APPROVAL_REQUIRED, BUDGET_EXCEEDED, GOVERNANCE_UNAVAILABLE, KILL_SWITCH_ACTIVE, POLICY_VERSION_MISMATCH, CAPABILITY_EXPIRED, CAPABILITY_REPLAY_DENIED, DUPLICATE_REQUEST, SELF_APPROVAL_FORBIDDEN, SECRET_VALUE_DISCLOSURE_FORBIDDEN, SECRET_REFERENCE_APPROVAL_REQUIRED."
+    }
+  }
+}
