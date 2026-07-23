@@ -17,3 +17,5 @@ ict-trading profile: specified, not activated
 ```
 
 **No real VPS was provisioned, connected to, or modified. No script under `deploy/hermes/` was executed against a real host.** That sub-scope requires a separate, explicit Owner authorization. Not marked `done` until merged and CI-verified.
+
+**Added to the same branch, same PR, per a separate Owner directive (23 July 2026):** ONYX specification — `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`, `deploy/hermes/profiles/onyx/onyx.profile.json`, `AGENT-ONYX` in `docs/AGENT_REGISTRY.md`, and three new `blocked_by_dependency` backlog entries (`ONYX-CORE-001`, `ONYX-GOV-001`, `ONYX-BUILD-001`, see `work/NEXT.md`). Specification only — ONYX was not implemented, installed, or activated; no profile was started; no VPS was touched.

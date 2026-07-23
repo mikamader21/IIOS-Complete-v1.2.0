@@ -13,9 +13,13 @@ Hermes VPS deployment package: in review
 VPS installation: not authorized
 Hermes runtime: not installed
 ict-trading profile: specified, not activated
+COO Brain: specified, not implemented
+ONYX: specified, not implemented, not activated
 ```
 
 `HERMES-DEP-001` was audited by the Owner against the real `NousResearch/hermes-agent` product (v0.19.0, 2026-07-20) before merge — the first draft had invented a "worker" systemd unit, a gateway-supervising unit duplicating Docker's own restart policy, and an invalid `terminal.home_mode` value, all now corrected (`docs/31_HERMES_DEPLOYMENT_PACKAGE.md` — "Corrections after upstream audit"). No real VPS was touched during the design task or the audit.
+
+Per a separate Owner directive on the same branch, ONYX (Executive Orchestrator, `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`) is now specified as the first planned Hermes profile alongside `ict-trading`. It operationalizes the pre-existing `BRAIN-COO` entry (`docs/BRAIN_REGISTRY.md`) as a new `AGENT-ONYX` (`docs/AGENT_REGISTRY.md`). ONYX v0.1 ("Executive Observer") is read-only by design — no write, no capability, no secret access, no financial action, no self-approval. It was not implemented, installed, or activated by this task.
 
 No Governance API endpoint, database, Hermes, Brain, Agent, secret, cryptography, or external connector is implemented. `src/iios_governance/` is a local, deterministic, in-memory reference implementation with 133 passing tests, 97% coverage, clean lint/type-check — it is not a production system, has no network listener, and cannot execute any external action (Governance decides, it never executes). No Brain or Agent is activated — every entry in `docs/BRAIN_REGISTRY.md` and `docs/AGENT_REGISTRY.md` remains `specified`/`not_implemented`.
 

@@ -110,6 +110,26 @@ This is a design/preparation deliverable, not a running-infrastructure test — 
 - The `hermes-deployment-tests` CI job (`.github/workflows/verify-foundation.yml`, ubuntu-latest) runs `bash -n`, ShellCheck, `systemd-analyze verify` (against a `hermes` user and stub scripts staged only on the disposable CI runner), LF-only line-ending checks, and the credential-shape and financial-execution checks above, in addition to the Foundation verifier.
 - `docs/TOOL_REGISTRY.md`'s Hermes entry still states `status: not integrated` — this task does not change that.
 
+## ONYX Executive Orchestrator (ONYX-CORE-001, specification only)
+
+This is a specification test, not an implementation test — ONYX has no executable code. Full detail in `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md`.
+
+- ONYX reads system state (`PROJECT_STATE.md`, `BACKLOG.md`, `work/`) without modifying it — no write tool exists in the v0.1 manifest.
+- ONYX selects the next authorized task per `BACKLOG.md`'s own selection rule, mirroring rather than replacing `AUTONOMY_PROTOCOL.md`'s existing logic.
+- ONYX consults Governance before any delegation, and fails closed — refuses to proceed — if a live Governance decision is unreachable for an action that would require one.
+- ONYX never self-approves a request it originated (Constitution Article III.11).
+- ONYX never modifies the Master Charter, Constitution, or Invariant Kernel.
+- ONYX never accesses a secret value — `deploy/hermes/profiles/onyx/onyx.profile.json`'s `secrets` field is empty.
+- ONYX never performs a trading or financial-execution action — `financial_execution: false` in the manifest, independent of and in addition to Constitution Article IV-D.
+- ONYX v0.1 never creates a Pull Request, commit, branch, or merge — `main_merge: false`, `release_creation: false`, no repository-write tool in scope.
+- ONYX surfaces disagreement between agent proposals explicitly rather than silently picking one.
+- ONYX's reports separate verified facts, its own analysis, other agents' attributed proposals, and the recommendation from the decision reserved to the Owner (`docs/32` — "Executive report format") — never blended into one undifferentiated narrative.
+- ONYX never treats Graphify output or derived memory as authoritative (`docs/MEMORY_ARCHITECTURE.md` — Rules).
+- ONYX never activates a `specified`-only Brain or agent, or presents one as operational.
+- ONYX never conceals an incident, a Governance denial, or an audit-relevant event from the Owner.
+- `scripts/verify_foundation.py` confirms presence of `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md` and `deploy/hermes/profiles/onyx/onyx.profile.json`, and structurally asserts the manifest's `status`, `activation_state`, `execution_mode`, empty `capabilities`/`tools`/`secrets`, every action-gate boolean, and `terminal.{backend,home_mode,docker_forward_env}`.
+- `docs/TOOL_REGISTRY.md`'s Hermes entry still states `status: not integrated` — this task does not change that. No ONYX test runner is implemented — these are conceptual acceptance criteria for the specification, matching how the Governance Core specification's acceptance criteria preceded `GOV-IMP-001`'s actual test suite.
+
 ## Exit condition
 
 No unresolved Critical; High findings have accepted mitigation and Owner sign-off.

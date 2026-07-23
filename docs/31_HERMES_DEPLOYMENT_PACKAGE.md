@@ -124,6 +124,10 @@ None of the three is ever committed. Full breakdown: `deploy/hermes/secrets/READ
 - The `ict-trading` profile has no live connection to any trading account, prop-firm platform, or data provider.
 - `hermes gateway install --system` (the official native-install systemd path) was not used and is not part of this package — this design uses the official Docker deployment path instead, per `docs/10_INFRASTRUCTURE.md`'s existing "Docker Compose precedes Kubernetes" direction; running both would create the two-gateways-for-one-profile problem this audit explicitly checked for.
 
+## 19. ONYX profile (added after this package's initial merge preparation)
+
+`deploy/hermes/profiles/onyx/onyx.profile.json` and `docs/32_ONYX_EXECUTIVE_ORCHESTRATOR_SPEC.md` specify a second planned Hermes profile — ONYX, the Executive Orchestrator (`BACKLOG.md` `ONYX-CORE-001`, blocked on this task merging and a real, healthy Hermes installation, among other gates). It is **specification only**: no native `config.yaml` counterpart was authored for it (unlike `ict-trading`, which has `ict-trading.config.yaml.template`), no materializer exists, and its manifest deliberately uses a different filesystem root (`/srv/iios/profiles/onyx/`) than this package's established `/opt/hermes/profiles/<name>/` convention — flagged in `docs/32` as an inconsistency to reconcile before real implementation, not silently resolved. `ict-trading` remains the only profile with a documented path toward activation review; ONYX is earlier-stage than that.
+
 ## Acceptance
 
-See `docs/14_ACCEPTANCE_TESTS.md` — "Hermes VPS deployment package (HERMES-DEP-001)".
+See `docs/14_ACCEPTANCE_TESTS.md` — "Hermes VPS deployment package (HERMES-DEP-001)" and "ONYX Executive Orchestrator (ONYX-CORE-001, specification only)".
