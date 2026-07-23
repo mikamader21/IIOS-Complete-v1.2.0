@@ -94,18 +94,20 @@ This IS an implementation test — `tests/governance/` is real, running code, no
 
 ## Hermes VPS deployment package (HERMES-DEP-001)
 
-This is a design/preparation deliverable, not a running-infrastructure test — no real VPS was provisioned, connected to, or modified, and no script under `deploy/hermes/` was executed. Full detail in `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`.
+This is a design/preparation deliverable, not a running-infrastructure test — no real VPS was provisioned, connected to, or modified, and no script under `deploy/hermes/` was executed against a real host. Full detail in `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`, including a "Corrections after upstream audit" section: an Owner-directed pre-merge audit checked this package against the real `NousResearch/hermes-agent` product (v0.19.0, 2026-07-20, consulted 2026-07-23) and required removing a fabricated "worker" systemd unit and a gateway-supervising unit that duplicated Docker's own `restart: unless-stopped`, among other corrections.
 
-- No Hermes/database/gateway port is bound to a public interface in any template — access is tunnel-interface-only (`deploy/hermes/firewall/`).
-- `deploy/hermes/scripts/create-service-user.sh` creates a locked-password, no-shell, non-`sudo` account; no template runs any Hermes process as `root`.
-- `deploy/hermes/directory-layout.md` and `bootstrap-directories.sh` fix every path under `/opt/hermes/` to `0750` (or stricter for `core/secrets/`, `0700`), owned `hermes:hermes`; no profile's Compose bind mount reaches another profile's directory or `core/secrets/`.
-- Every profile config (`deploy/hermes/profiles/ict-trading.profile.json`) fixes `terminal.cwd` and `terminal.home_mode` explicitly and sets an empty forwarded-environment allowlist by default.
-- `deploy/hermes/firewall/egress-allowlist.md` and `apply-ufw-rules.sh` agree on the same destination set; the script is default-deny before the allowlist is applied and refuses to run with an unset SSH source.
-- `deploy/hermes/secrets/env.template` contains placeholder values only; `scripts/verify_foundation.py`'s secret scanner finds nothing under `deploy/hermes/`.
-- `deploy/hermes/systemd/hermes-backup.timer` and `hermes-healthcheck.timer` are present and reference services that exist; the health-check service never restarts anything itself.
+- No Hermes/dashboard port is bound to a public interface in any template — Compose publishes ports to the tunnel-interface address only (`deploy/hermes/core/docker-compose.yml.template`).
+- `deploy/hermes/scripts/create-service-user.sh` creates a locked-password, no-shell, non-`sudo` account; no Hermes process runs as `root`. It must join the host's `docker` group to run `docker compose exec` for backup/health-check — documented as a real, accepted trade-off (effectively root-equivalent via docker.sock), not silently granted.
+- `deploy/hermes/directory-layout.md` and `bootstrap-directories.sh` fix every path under `/opt/hermes/` to `0750` (or stricter for `core/secrets/`, `0700`), owned `hermes:hermes`; one container per profile, each mounting only its own state directory as its entire `HERMES_HOME`.
+- `deploy/hermes/profiles/ict-trading.config.yaml.template` sets real, upstream-confirmed `terminal.cwd`, `terminal.home_mode: "profile"` (not an invented value), and an empty `docker_forward_env` by default; `ict-trading.profile.json` is documented as an IIOS manifest distinct from that native config.
+- `deploy/hermes/firewall/egress-allowlist.md` and `apply-ufw-rules.sh` agree on the same destination set; the script is dry-run by default, requires `--apply` (and separately `--apply-egress` for outbound rules), verifies the SSH source before changing anything, and never runs `ufw --force reset`.
+- `deploy/hermes/secrets/env.template` and `core/compose.env.example` contain placeholder values only; `scripts/verify_foundation.py`'s secret scanner and the `hermes-deployment-tests` CI job's dedicated credential-shape check both find nothing under `deploy/hermes/`.
+- `deploy/hermes/systemd/hermes-backup.timer` and `hermes-healthcheck.timer` are present and reference services that exist; there is no gateway/worker unit; the health-check service never restarts anything itself.
+- `deploy/hermes/scripts/run-backup.sh` and `run-healthcheck.sh` invoke the official `hermes backup`/`hermes doctor`/`hermes gateway status` commands via `docker compose exec`, not fabricated commands.
 - `deploy/hermes/runbooks/UPDATE_ROLLBACK.md`'s update path requires a confirmed backup before any pinned-version change; `UNINSTALL_ROLLBACK.md`'s destructive path requires a verified, restorable backup before host data removal.
-- `deploy/hermes/profiles/ict-trading.profile.json` declares no order-capable data scope and no standing Governance capability.
+- `deploy/hermes/profiles/ict-trading.profile.json` declares no order-capable data scope and no standing Governance capability — checked structurally by the `hermes-deployment-tests` CI job, not only by prose.
 - `scripts/verify_foundation.py` confirms presence of `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`, `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md`, and every file under `deploy/hermes/`.
+- The `hermes-deployment-tests` CI job (`.github/workflows/verify-foundation.yml`, ubuntu-latest) runs `bash -n`, ShellCheck, `systemd-analyze verify` (against a `hermes` user and stub scripts staged only on the disposable CI runner), LF-only line-ending checks, and the credential-shape and financial-execution checks above, in addition to the Foundation verifier.
 - `docs/TOOL_REGISTRY.md`'s Hermes entry still states `status: not integrated` — this task does not change that.
 
 ## Exit condition

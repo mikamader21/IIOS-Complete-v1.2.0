@@ -1,0 +1,62 @@
+# Template — not deployed by HERMES-DEP-001. Not executed. Review before use.
+#
+# A real Hermes Agent config.yaml fragment (upstream key names/values
+# confirmed against cli-config.yaml.example, NousResearch/hermes-agent,
+# consulted 2026-07-23 against release v0.19.0 — 2026-07-20). This is NOT
+# a complete config.yaml; it lists only the keys this deployment
+# deliberately sets, to be merged into (or used to seed) the generated
+# file at /opt/hermes/profiles/ict-trading/state/config.yaml, which is
+# HERMES_HOME/config.yaml once the ict-trading container's volume is
+# mounted (docs/31_HERMES_DEPLOYMENT_PACKAGE.md — materialization step).
+#
+# deploy/hermes/profiles/ict-trading.profile.json is the IIOS-authored
+# deployment manifest (source of truth in Git); this file is what that
+# manifest maps to in Hermes' own native config format. They are not the
+# same document and must not be confused (audit requirement).
+
+terminal:
+  # "local" — not "docker". Hermes itself already runs inside its own
+  # isolated container (Hermes-in-Docker); choosing the "docker" terminal
+  # backend here would additionally require mounting the host's
+  # /var/run/docker.sock into the Hermes container so it can launch sibling
+  # sandbox containers — and access to docker.sock is effectively
+  # host-root-equivalent. For a read-only data-observability profile that
+  # does not need to spin up ad hoc execution sandboxes, that privilege
+  # expansion is not justified. "local" confines command execution to
+  # inside the already-isolated Hermes container's own filesystem — no
+  # additional host privilege is granted. (This narrows
+  # docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md's original blanket
+  # "docker terminal backend for every profile" — recorded as an amendment
+  # there, not silently changed.)
+  backend: "local"
+
+  # Absolute path inside the container (which is /opt/data, the mounted
+  # volume root — see core/docker-compose.yml.template). Never relative
+  # ("."), per docs/03_GOVERNANCE_SECURITY.md's "Set explicit terminal.cwd."
+  cwd: "/opt/data/workspace"
+
+  # "profile" (not the invented "profile_scoped") — forces
+  # HOME={HERMES_HOME}/home for subprocesses, i.e. /opt/data/home inside
+  # the container, /opt/hermes/profiles/ict-trading/state/home on the
+  # host. Strict per-profile isolation; no real OS-user HOME is ever used.
+  home_mode: "profile"
+
+# Explicit allowlist, empty by default (docs/03_GOVERNANCE_SECURITY.md —
+# "Keep forwarded environment variable allowlist empty by default"). Add an
+# entry here only for a specific, named variable a specific tool genuinely
+# needs — never a blanket forward.
+docker_forward_env: []
+
+# NOT SET, deliberately: sudo / password-piping. Hermes Agent supports an
+# optional sudo password-piping feature (upstream cli-config.yaml.example);
+# this profile has no use for elevated privileges and must never enable it.
+
+# Toolset restriction to a read-only-appropriate subset is intended for
+# this profile (data-observability only — no order placement path should
+# exist even as an available tool) but the exact YAML key/shape for
+# restricting toolset composition by profile was not independently
+# confirmed against a running instance during this design task. Verify
+# against `hermes config show` / the full upstream cli-config.yaml.example
+# on a real installation before this profile is ever activated, and update
+# this template with the confirmed keys rather than assuming the shape
+# above is complete.

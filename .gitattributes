@@ -10,5 +10,6 @@
 *.service text eol=lf
 *.timer text eol=lf
 *.template text eol=lf
+*.example text eol=lf
 
 governance/invariant-kernel/*.json text eol=lf

@@ -109,9 +109,27 @@ deliverables:
   - uninstall/rollback runbook
 deliverables_done:
   - docs/31_HERMES_DEPLOYMENT_PACKAGE.md
-  - docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md (Proposed)
+  - docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md (Proposed, amended post-audit)
   - deploy/hermes/ (README, directory-layout, scripts, systemd units, firewall,
-    secrets template, ict-trading profile, five runbooks)
+    core/ compose template, secrets templates, ict-trading manifest + config.yaml
+    template, five runbooks)
+  - .github/workflows/verify-foundation.yml — hermes-deployment-tests CI job
+audit: >
+  Owner-directed pre-merge audit ("AUDITORIA PRE-MERGE — HERMES-DEP-001") checked
+  this package against the real NousResearch/hermes-agent product (v0.19.0,
+  2026-07-20, consulted 2026-07-23). Found and corrected: a fabricated "worker"
+  systemd unit with no upstream basis, a gateway-supervising systemd unit
+  duplicating Docker's own restart:unless-stopped, an invented
+  terminal.home_mode value, an ict-trading manifest presented ambiguously
+  against Hermes' real config.yaml format, a raw-tar backup duplicating the
+  official `hermes backup` command, and an unsafe default-apply firewall
+  script. Full list: docs/31_HERMES_DEPLOYMENT_PACKAGE.md — "Corrections after
+  upstream audit". No real VPS was touched during the audit or its fixes.
+status_detail: >
+  HERMES-DEP-001: in review
+  VPS installation: not authorized
+  Hermes runtime: not installed
+  ict-trading profile: specified, not activated
 acceptance_tests: docs/14_ACCEPTANCE_TESTS.md — "Hermes VPS deployment package (HERMES-DEP-001)"
 note: Design/preparation scope only in this task — no real VPS was provisioned,
   connected to, or modified, and no script under deploy/hermes/ was executed.

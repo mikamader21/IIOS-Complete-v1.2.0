@@ -10,8 +10,12 @@ Governance Core specification: ratified
 Governance Core implementation skeleton: done
 Governance Core production implementation: not started
 Hermes VPS deployment package: in review
-Hermes runtime integration: not started
+VPS installation: not authorized
+Hermes runtime: not installed
+ict-trading profile: specified, not activated
 ```
+
+`HERMES-DEP-001` was audited by the Owner against the real `NousResearch/hermes-agent` product (v0.19.0, 2026-07-20) before merge — the first draft had invented a "worker" systemd unit, a gateway-supervising unit duplicating Docker's own restart policy, and an invalid `terminal.home_mode` value, all now corrected (`docs/31_HERMES_DEPLOYMENT_PACKAGE.md` — "Corrections after upstream audit"). No real VPS was touched during the design task or the audit.
 
 No Governance API endpoint, database, Hermes, Brain, Agent, secret, cryptography, or external connector is implemented. `src/iios_governance/` is a local, deterministic, in-memory reference implementation with 133 passing tests, 97% coverage, clean lint/type-check — it is not a production system, has no network listener, and cannot execute any external action (Governance decides, it never executes). No Brain or Agent is activated — every entry in `docs/BRAIN_REGISTRY.md` and `docs/AGENT_REGISTRY.md` remains `specified`/`not_implemented`.
 

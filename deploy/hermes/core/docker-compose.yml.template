@@ -1,0 +1,62 @@
+# Template — not deployed by HERMES-DEP-001. Review before use on a real host.
+#
+# Grounded in the OFFICIAL Hermes Agent Docker deployment
+# (https://hermes-agent.nousresearch.com/docs/user-guide/docker, consulted
+# 2026-07-23 against Hermes Agent v0.19.0, released 2026-07-20). The
+# official example is a single service — there is no "worker" container or
+# CLI subcommand in the real product; an earlier draft of this package
+# invented one and it has been removed (docs/31_HERMES_DEPLOYMENT_PACKAGE.md
+# — Corrections after upstream audit).
+#
+# Supervision: `restart: unless-stopped` plus the Docker daemon (itself a
+# systemd service on Ubuntu, dockerd/docker.service) is the officially
+# documented mechanism for keeping this container running across crashes
+# and reboots. No custom systemd unit wraps `docker compose up/down` here —
+# that would duplicate supervision Docker already provides and risks a
+# second, confusing control path (systemctl vs docker). See
+# docs/31_HERMES_DEPLOYMENT_PACKAGE.md section 3 for the full comparison.
+#
+# One container per IIOS profile, each with its OWN isolated host directory
+# as its entire HERMES_HOME (mounted at the official /opt/data path) —
+# this is a deliberate choice to get host-level isolation between profiles
+# (docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md decision 6), instead of
+# using Hermes' own multi-profile-per-installation feature
+# (~/.hermes/profiles/<name>/) inside one shared container. Add one service
+# block per profile, each with its own volume and (if published) its own
+# port pair.
+#
+# TAILSCALE_IP must be set in a .env file in THIS directory
+# (/opt/hermes/core/compose/.env — see compose.env.example), not exported
+# in an interactive shell: systemd-triggered `docker compose` invocations
+# (backup, health check) do not inherit a login shell's exported
+# variables, but Compose auto-loads a project-directory .env file for
+# every invocation, interactive or not. TAILSCALE_IP is a network fact,
+# not a secret, but is deploy-time/host-specific so it is not hardcoded
+# here. Ports are bound to that address only — never 0.0.0.0 — so nothing
+# is reachable off the private tunnel (docs/10_INFRASTRUCTURE.md — "no
+# public database/Redis/Hermes ports").
+
+services:
+  ict-trading:
+    image: nousresearch/hermes-agent:0.19.0   # pinned — never :latest (ADR-0013 decision 9)
+    container_name: hermes-ict-trading
+    restart: unless-stopped
+    command: gateway run
+    ports:
+      - "${TAILSCALE_IP:?set TAILSCALE_IP before starting}:8642:8642"   # gateway API
+      - "${TAILSCALE_IP:?set TAILSCALE_IP before starting}:9119:9119"   # dashboard
+    volumes:
+      - /opt/hermes/profiles/ict-trading/state:/opt/data
+    env_file:
+      - /opt/hermes/core/secrets/.env   # container/orchestration-level flags only —
+                                         # see deploy/hermes/secrets/README.md for what
+                                         # belongs here versus inside /opt/data/.env
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+
+# No `worker` service. If Hermes ever ships a distinct worker process/
+# subcommand, add it here with a citation to the official docs that
+# introduced it — never speculatively.

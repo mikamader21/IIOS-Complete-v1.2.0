@@ -1,17 +1,22 @@
 {
+  "$comment": "This is an IIOS-authored deployment manifest, not a native Hermes Agent config file. Hermes' own format is config.yaml (deploy/hermes/profiles/ict-trading.config.yaml.template maps this manifest's terminal/* fields to real upstream keys, confirmed against NousResearch/hermes-agent v0.19.0, 2026-07-20, consulted 2026-07-23). Git is the authoritative source for this manifest; the materialized profile lives in its own HERMES_HOME once installed (deploy/hermes/runbooks/INSTALL.md — materialization step).",
   "profile_id": "ict-trading",
   "status": "designed_not_activated",
-  "description": "First Hermes profile (PROJECT_STATE.md — Proposed first domain). Read-only prop-firm/trading observability. No order-capable credential, no order endpoint, no capability to place, modify, or cancel any trade.",
+  "description": "First Hermes deployment (PROJECT_STATE.md — Proposed first domain). Read-only prop-firm/trading observability. No order-capable credential, no order endpoint, no capability to place, modify, or cancel any trade.",
+  "deployment_model": "One dedicated Hermes container per IIOS profile, each with its own isolated host directory as its ENTIRE HERMES_HOME (mounted at Docker's official /opt/data path) — not Hermes' own internal named-profile subdirectory feature (~/.hermes/profiles/<name>/), which would share one HERMES_HOME/container across profiles and would not give host-level isolation. See docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md decision 6.",
   "filesystem": {
     "root": "/opt/hermes/profiles/ict-trading",
     "workspace": "/opt/hermes/profiles/ict-trading/workspace",
     "state": "/opt/hermes/profiles/ict-trading/state",
+    "state_note": "state/ is bind-mounted to /opt/data (this container's entire HERMES_HOME) per deploy/hermes/core/docker-compose.yml.template. Hermes materializes config.yaml, .env, SOUL.md, memory, sessions, skills and its state database inside state/ on first run.",
     "isolation_note": "Bind-mounted into this profile's Compose service only. No other profile mounts this path; this profile mounts no other profile's path."
   },
   "terminal": {
-    "backend": "docker",
-    "cwd": "/opt/hermes/profiles/ict-trading/workspace",
-    "home_mode": "profile_scoped",
+    "backend": "local",
+    "backend_note": "Not 'docker' — see deploy/hermes/profiles/ict-trading.config.yaml.template for why (avoids requiring a host docker.sock mount into the Hermes container).",
+    "cwd": "/opt/data/workspace",
+    "home_mode": "profile",
+    "forwarded_env_allowlist_key": "docker_forward_env",
     "forwarded_env_allowlist": []
   },
   "data_scope": {
@@ -37,8 +42,9 @@
     "note": "Every action this profile takes still requires a live Governance Core decision once Hermes is actually integrated (Phase 6). This package grants no capability by itself — src/iios_governance/ has no execution surface (docs/30_GOVERNANCE_IMPLEMENTATION_SKELETON.md) and Hermes is not integrated (docs/TOOL_REGISTRY.md)."
   },
   "secrets": {
-    "source": "deploy/hermes/secrets/env.template#ICT_TRADING_DATA_PROVIDER_TOKEN",
-    "note": "Real value injected out-of-band on the host per deploy/hermes/secrets/README.md. Read-only data-provider token only — never an order-capable credential."
+    "container_level_flags_source": "deploy/hermes/secrets/env.template, loaded at /opt/hermes/core/secrets/.env via Docker Compose env_file (orchestration-level only, e.g. dashboard API key)",
+    "hermes_native_secrets_source": "Populated directly inside this profile's own HERMES_HOME at /opt/hermes/profiles/ict-trading/state/.env after first container start, via hermes config set or a direct out-of-band edit — this is Hermes' own secrets file (upstream docs: 'Secrets and tokens -> ~/.hermes/.env'), distinct from the container-level file above.",
+    "note": "Real value injected out-of-band on the host per deploy/hermes/secrets/README.md. Read-only data-provider token only — never an order-capable credential. Neither file is ever committed."
   },
   "constitutional_reference": "Article IV-D prohibits autonomous financial action; this profile's data scope has no path to violate that, independent of and in addition to Governance mediation."
 }
