@@ -92,6 +92,22 @@ This IS an implementation test — `tests/governance/` is real, running code, no
 - No test performs a network call; no test depends on real wall-clock time (every test uses an injectable `FixedClock`).
 - No production cryptography is implemented — `DisabledSignatureVerifier` is the only signature verifier wired into `GovernanceService`, and it always fails closed.
 
+## Hermes VPS deployment package (HERMES-DEP-001)
+
+This is a design/preparation deliverable, not a running-infrastructure test — no real VPS was provisioned, connected to, or modified, and no script under `deploy/hermes/` was executed. Full detail in `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`.
+
+- No Hermes/database/gateway port is bound to a public interface in any template — access is tunnel-interface-only (`deploy/hermes/firewall/`).
+- `deploy/hermes/scripts/create-service-user.sh` creates a locked-password, no-shell, non-`sudo` account; no template runs any Hermes process as `root`.
+- `deploy/hermes/directory-layout.md` and `bootstrap-directories.sh` fix every path under `/opt/hermes/` to `0750` (or stricter for `core/secrets/`, `0700`), owned `hermes:hermes`; no profile's Compose bind mount reaches another profile's directory or `core/secrets/`.
+- Every profile config (`deploy/hermes/profiles/ict-trading.profile.json`) fixes `terminal.cwd` and `terminal.home_mode` explicitly and sets an empty forwarded-environment allowlist by default.
+- `deploy/hermes/firewall/egress-allowlist.md` and `apply-ufw-rules.sh` agree on the same destination set; the script is default-deny before the allowlist is applied and refuses to run with an unset SSH source.
+- `deploy/hermes/secrets/env.template` contains placeholder values only; `scripts/verify_foundation.py`'s secret scanner finds nothing under `deploy/hermes/`.
+- `deploy/hermes/systemd/hermes-backup.timer` and `hermes-healthcheck.timer` are present and reference services that exist; the health-check service never restarts anything itself.
+- `deploy/hermes/runbooks/UPDATE_ROLLBACK.md`'s update path requires a confirmed backup before any pinned-version change; `UNINSTALL_ROLLBACK.md`'s destructive path requires a verified, restorable backup before host data removal.
+- `deploy/hermes/profiles/ict-trading.profile.json` declares no order-capable data scope and no standing Governance capability.
+- `scripts/verify_foundation.py` confirms presence of `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`, `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md`, and every file under `deploy/hermes/`.
+- `docs/TOOL_REGISTRY.md`'s Hermes entry still states `status: not integrated` — this task does not change that.
+
 ## Exit condition
 
 No unresolved Critical; High findings have accepted mitigation and Owner sign-off.

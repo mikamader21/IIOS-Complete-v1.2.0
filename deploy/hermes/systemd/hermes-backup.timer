@@ -1,0 +1,13 @@
+# Template — not installed by HERMES-DEP-001. Review before copying to /etc/systemd/system/.
+
+[Unit]
+Description=Daily Hermes backup schedule
+Documentation=file:///opt/hermes/runbooks/BACKUP_RESTORE.md
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1800
+Persistent=true
+
+[Install]
+WantedBy=timers.target

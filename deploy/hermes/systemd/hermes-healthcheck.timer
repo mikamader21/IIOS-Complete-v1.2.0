@@ -1,0 +1,13 @@
+# Template — not installed by HERMES-DEP-001. Review before copying to /etc/systemd/system/.
+
+[Unit]
+Description=Hermes health check schedule
+Documentation=file:///opt/hermes/runbooks/HEALTH_CHECKS.md
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=false
+
+[Install]
+WantedBy=timers.target

@@ -81,7 +81,7 @@ merged_as: PR #7, commit 381f525, merge commit bb4579bf82c6cddf65a5280e74b932771
 ID: HERMES-DEP-001
 title: Secure Hermes VPS deployment package
 phase: Phase 6 — Hermes Runtime Integration
-status: ready
+status: review
 priority: P0
 dependencies: [GOV-IMP-001 merged and verified]  # satisfied: PR #7, merge commit bb4579b
 risk_class: C
@@ -107,9 +107,15 @@ deliverables:
   - ict-trading profile package
   - installation runbook
   - uninstall/rollback runbook
-acceptance_tests: Not yet defined. Must not execute against a real VPS on this task alone.
-note: Design/preparation scope only in this task. Connecting to or modifying a real
-  VPS requires separate Owner authorization.
+deliverables_done:
+  - docs/31_HERMES_DEPLOYMENT_PACKAGE.md
+  - docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md (Proposed)
+  - deploy/hermes/ (README, directory-layout, scripts, systemd units, firewall,
+    secrets template, ict-trading profile, five runbooks)
+acceptance_tests: docs/14_ACCEPTANCE_TESTS.md — "Hermes VPS deployment package (HERMES-DEP-001)"
+note: Design/preparation scope only in this task — no real VPS was provisioned,
+  connected to, or modified, and no script under deploy/hermes/ was executed.
+  Connecting to or modifying a real VPS requires separate Owner authorization.
 ```
 
 ```text
@@ -162,7 +168,7 @@ acceptance_tests: docs/11_CONTROL_CENTER_PRD.md MVP modules, once scoped.
 
 - `AOL-001` is `done` (PR #6 merged, commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`).
 - `GOV-IMP-001` is `done` (PR #7 merged, commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`; CI verified green, 4/4 checks, run `30047219545`).
-- `HERMES-DEP-001` is `ready` — its only dependency is satisfied. Designing/preparing the package needs no further Owner decision; connecting to or modifying a real VPS does. This is the next task selected under `AUTONOMY_PROTOCOL.md`.
+- `HERMES-DEP-001` is `review` on `feature/hermes-deployment-package` — design/preparation deliverables complete, no real VPS touched. Not marked `done` until merged and CI-verified.
 - `ICT-KNOW-001` cannot be scoped until the Owner confirms where the source ICT projects/documents live.
 - `ICT-AGENT-001` and `CONTROL-UI-001` depend on multiple upstream tasks not yet done; both remain `blocked_by_dependency`.
 - This backlog intentionally starts small. Additional documentation-adjacent tasks are expected to be filed as `proposed` by whichever session finds a gap — that filing itself is autonomy-permitted (`AUTONOMY_PROTOCOL.md`).

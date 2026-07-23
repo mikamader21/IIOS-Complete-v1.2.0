@@ -2,13 +2,15 @@
 
 **Version:** 1.3.0 — Governance Core Specification (tagged, `v1.3.0` → `aa9ec6d66f4c7c84ee8218d3b5901d888086c76f`); Governance Core implementation skeleton merged and CI-verified
 **Review date:** 23 July 2026
-**Phase:** 3 — Governance Core Implementation, first task done; Phase 6 (Hermes Runtime Integration) design work starting (see `MASTER_IMPLEMENTATION_PROGRAM.md`)
-**Status:** Foundation (Phase 0), Governance Core Specification (Phase 1), Autonomous Operating Layer (Phase 2), and the Governance Core implementation skeleton (Phase 3's `GOV-IMP-001`) are complete. Phase 2 merged (PR #6, commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`). `GOV-IMP-001` merged (PR #7, commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`), CI verified green — 4/4 checks (`verify` ubuntu/windows, `governance-tests` ubuntu/windows), run `30047219545`. ADR-0010 and ADR-0011 are **ratified**; ADR-0012 (policy bundle format) is **Proposed**. Next task per `BACKLOG.md`, `HERMES-DEP-001` (Secure Hermes VPS deployment package, design/preparation scope), is now in progress on `feature/hermes-deployment-package`.
+**Phase:** 3 — Governance Core Implementation, first task done; Phase 6 (Hermes Runtime Integration) design/preparation deliverable in review (see `MASTER_IMPLEMENTATION_PROGRAM.md`)
+**Status:** Foundation (Phase 0), Governance Core Specification (Phase 1), Autonomous Operating Layer (Phase 2), and the Governance Core implementation skeleton (Phase 3's `GOV-IMP-001`) are complete. Phase 2 merged (PR #6, commit `83c2c73`, merge commit `1f4ea9762cb5a2060cc38746af057c63ef2286a7`). `GOV-IMP-001` merged (PR #7, commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`), CI verified green — 4/4 checks (`verify` ubuntu/windows, `governance-tests` ubuntu/windows), run `30047219545`. ADR-0010 and ADR-0011 are **ratified**; ADR-0012 (policy bundle format) and ADR-0013 (Hermes VPS deployment model) are **Proposed**. `HERMES-DEP-001` (Secure Hermes VPS deployment package, design/preparation scope) is in review on `feature/hermes-deployment-package` — no real VPS provisioned, connected to, or modified.
 
 ```text
 Governance Core specification: ratified
 Governance Core implementation skeleton: done
 Governance Core production implementation: not started
+Hermes VPS deployment package: in review
+Hermes runtime integration: not started
 ```
 
 No Governance API endpoint, database, Hermes, Brain, Agent, secret, cryptography, or external connector is implemented. `src/iios_governance/` is a local, deterministic, in-memory reference implementation with 133 passing tests, 97% coverage, clean lint/type-check — it is not a production system, has no network listener, and cannot execute any external action (Governance decides, it never executes). No Brain or Agent is activated — every entry in `docs/BRAIN_REGISTRY.md` and `docs/AGENT_REGISTRY.md` remains `specified`/`not_implemented`.

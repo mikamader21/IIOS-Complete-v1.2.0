@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — Hermes VPS deployment package (HERMES-DEP-001)
+
+- Added `docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md` (**Proposed**): dedicated unprivileged `hermes` service user, Docker Compose + systemd supervision, no public listener, default-deny egress allowlist, explicit `terminal.cwd`/`terminal.home_mode`, two-layer filesystem isolation (application + host), out-of-band secret injection, encrypted scheduled backups, pinned-version update/rollback, read-only `ict-trading` first profile.
+- Added `docs/31_HERMES_DEPLOYMENT_PACKAGE.md`: the design write-up covering all eighteen `HERMES-DEP-001` deliverables, a VPS threat model, and an explicit "what this task did not do" section.
+- Added `deploy/hermes/`: `README.md`, `directory-layout.md`; `scripts/` (`create-service-user.sh`, `bootstrap-directories.sh`, `run-backup.sh`, `run-healthcheck.sh`); `systemd/` (`hermes-gateway.service`, `hermes-worker.service`, `hermes-backup.service`+`.timer`, `hermes-healthcheck.service`+`.timer`); `firewall/` (`apply-ufw-rules.sh`, `egress-allowlist.md`); `secrets/` (`env.template` with placeholder values only, `README.md` describing the injection design); `profiles/ict-trading.profile.json` (read-only, no order endpoint, no standing Governance capability); `runbooks/` (`INSTALL.md`, `UNINSTALL_ROLLBACK.md`, `UPDATE_ROLLBACK.md`, `BACKUP_RESTORE.md`, `HEALTH_CHECKS.md`).
+- Extended `scripts/verify_foundation.py` to require presence of every file above and structurally validate `deploy/hermes/profiles/ict-trading.profile.json` as JSON.
+- Added a "Hermes VPS deployment package (HERMES-DEP-001)" section to `docs/14_ACCEPTANCE_TESTS.md`.
+- Noted the design package's existence in `docs/TOOL_REGISTRY.md`'s Hermes entry (`deployment_package` field) without changing its `status: not integrated`.
+- **No real VPS was provisioned, connected to, or modified. No script under `deploy/hermes/` was executed. No real secret, API key, or credential was created, requested, or stored.** Hermes remains not integrated; the `ict-trading` profile has no live connection to any account or data provider.
+- Status:
+  ```text
+  Hermes VPS deployment package: in review
+  Hermes runtime integration: not started
+  ```
+
 ## Unreleased — Governance Core implementation skeleton (GOV-IMP-001) — merged
 
 Merged as PR #7 (commit `381f525`, merge commit `bb4579bf82c6cddf65a5280e74b9327714340a45`), CI verified green post-merge: 4/4 checks (`verify` ubuntu-latest/windows-latest, `governance-tests` ubuntu-latest/windows-latest), run `30047219545`. Branch `feature/governance-core-skeleton` deleted (local and remote) after verification.

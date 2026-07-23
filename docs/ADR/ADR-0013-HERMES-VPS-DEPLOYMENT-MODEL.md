@@ -1,0 +1,40 @@
+# ADR-0013 — Hermes VPS Deployment Model
+
+Status: Proposed
+
+## Context
+
+`HERMES-DEP-001` (`BACKLOG.md`) asks for a secure Hermes VPS deployment package, scoped explicitly to **design and preparation only** — no real VPS is provisioned, connected to, or modified by this task. Hermes itself remains **not integrated** (`docs/TOOL_REGISTRY.md`); `docs/HANDOFF_PROTOCOL.md` and `MASTER_IMPLEMENTATION_PROGRAM.md` Phase 6 still require a separate, explicit Owner authorization before any real runtime activation. This ADR records the deployment *architecture* decision the package in `deploy/hermes/` implements, so that when Phase 6 is authorized, installation follows a pre-reviewed design rather than an ad hoc one.
+
+This ADR does not authorize infrastructure. It documents what will be built, under the constraints already ratified in `docs/03_GOVERNANCE_SECURITY.md` ("Hermes baseline") and `docs/10_INFRASTRUCTURE.md` ("VPS MVP direction").
+
+## Decision
+
+1. **Single unprivileged service user.** All Hermes processes run as a dedicated, non-root, non-interactive system user (`hermes`), never as `root` and never under an existing operator's login account. No `sudo` is granted to this user.
+2. **Docker Compose for the application layer, systemd for host supervision.** Hermes Core/gateway and its worker run in Docker Compose (per `docs/10_INFRASTRUCTURE.md` — Services), matching the ratified "Docker Compose precedes Kubernetes" direction. systemd units supervise the Compose stack's lifecycle (start/stop/restart-on-failure) and drive the backup and health-check timers — systemd, not cron, so failures are visible via `systemctl status`/`journalctl` rather than silently swallowed mail.
+3. **No public listener.** No Hermes, database, or gateway port is exposed on a public interface. Access is private-network only (Tailscale or an equivalent authenticated tunnel), matching `docs/10_INFRASTRUCTURE.md` — "no public database/Redis/Hermes ports."
+4. **Default-deny egress with an explicit allowlist.** The host firewall denies outbound traffic by default; only the destinations Hermes actually needs (package/model-provider endpoints, the private tunnel) are allowlisted. This is a stricter reading of `docs/03_GOVERNANCE_SECURITY.md`'s "Keep forwarded environment variable allowlist empty by default" principle, applied at the network layer.
+5. **`terminal.cwd` and `terminal.home_mode` are always explicit.** Per `docs/03_GOVERNANCE_SECURITY.md` ("Set explicit `terminal.cwd`") and the Sandbox acceptance test in `docs/14_ACCEPTANCE_TESTS.md`, Hermes command execution never inherits an implicit working directory or unrestricted host-home mount. The deployment package fixes both to profile-scoped paths under `/opt/hermes/profiles/<profile>/`.
+6. **Filesystem isolation is enforced at two layers.** `docs/03_GOVERNANCE_SECURITY.md` already states "Profiles isolate Hermes state, not host filesystem access" — this ADR adds the missing host-level layer: each profile gets its own directory tree owned by the `hermes` user with `0750` permissions, and the Docker Compose bind mounts are scoped per-profile, so a profile cannot read another profile's state even though both run under the same OS user.
+7. **Secrets are never committed and never handled by Claude.** The package ships an `env.template` with placeholder keys only; real values are injected out-of-band (manually by the Owner, or later by whatever KMS/HSM/Vault product `docs/23_CAPABILITY_MODEL.md`'s "Open questions" eventually selects) into a root-owned, `0600`, git-ignored file that systemd loads via `EnvironmentFile=`. No script in this package reads, prints, or transmits a secret value.
+8. **Backups are file-level and encrypted at rest**, targeting the same "encrypted volume and external backup" direction already in `docs/10_INFRASTRUCTURE.md`, scheduled via a systemd timer rather than embedded in application code.
+9. **Update and rollback are pinned-version operations.** The package follows the existing `docs/10_INFRASTRUCTURE.md` upgrade policy verbatim (release watch → read notes/security → staging backup → pinned upgrade → tests → observation window → production approval → rollback readiness) rather than inventing a new one.
+10. **The first profile is `ict-trading`, read-only.** Its capability scope is documented as read-only observability (account status, balance/equity, drawdown, history — no order endpoints), matching `PROJECT_STATE.md`'s proposed first domain and Constitution Article IV-D's prohibition on autonomous financial action. It has no standing capability; every action still passes through Governance once Hermes is actually wired to it (Phase 6, not this task).
+
+## Alternatives considered
+
+- **Kubernetes from the start** — rejected; `docs/10_INFRASTRUCTURE.md` already decided Compose precedes Kubernetes, and a single-VPS MVP does not need an orchestrator.
+- **Running Hermes directly under systemd without Docker** — rejected; Docker isolates the application deployment independently of the `terminal.backend: docker` sandboxing control (`docs/10_INFRASTRUCTURE.md` — "Docker distinction"), and losing that isolation would remove a layer this ADR relies on for point 6.
+- **A shared multi-profile OS user with path-convention-only isolation** — rejected; relying purely on the Hermes application layer to respect profile boundaries (as `docs/03_GOVERNANCE_SECURITY.md` already flags as insufficient — "Profiles isolate Hermes state, not host filesystem access") would leave no host-level backstop if a profile were ever compromised or misconfigured.
+- **cron for backups/health checks** — rejected in favor of systemd timers for uniform logging/status with the rest of the stack (point 2).
+
+## Consequences
+
+- The deployment package (`deploy/hermes/`) can be reviewed and iterated on before any real infrastructure exists, at zero infrastructure cost or risk.
+- Phase 6's actual VPS provisioning becomes an execution of an already-reviewed design, not a from-scratch design-under-pressure exercise.
+- This ADR does not select a VPS provider, monthly ceiling, or KMS/HSM/Vault product — those remain open Owner decisions (`work/BLOCKED.md`).
+- No governed document (Master Charter, Constitution, Invariant Kernel) is affected. No secret, credential, or real infrastructure endpoint is introduced by this ADR or its accompanying package.
+
+## Status
+
+Proposed. Ratification is not required to keep building the design/preparation deliverables of `HERMES-DEP-001`, consistent with how `ADR-0012-POLICY-BUNDLE-FORMAT.md` remained Proposed while `GOV-IMP-001`'s implementation proceeded. Real VPS provisioning against this design requires separate, explicit Owner authorization regardless of this ADR's ratification state.
