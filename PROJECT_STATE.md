@@ -1,16 +1,17 @@
 # IIOS Project State
 
-**Version:** 1.3.0 — Governance Core Specification (documentation prepared; tag not yet created — publishes only after merge, green CI, and post-merge verification)
+**Version:** 1.3.0 — Governance Core Specification (tagged, `v1.3.0` → `aa9ec6d66f4c7c84ee8218d3b5901d888086c76f`)
 **Review date:** 23 July 2026
-**Phase:** 0 — Foundation  
-**Status:** Foundation v1.2.0/v1.2.1 ratified and merged. ADR-0010 (Governance Core Boundaries) and ADR-0011 (Governance MVP Owner Decisions) are **ratified** by the Owner. The capability envelope's cryptographic profile was corrected 23 July 2026: JWS Compact Serialization, `alg: Ed25519` (RFC 9864 fully-specified identifier, not the polymorphic `EdDSA`), `kid`/`typ` mandatory in the protected header — see `docs/23_CAPABILITY_MODEL.md` and ADR-0011.
+**Phase:** 2 — Autonomous Operating Layer (see `MASTER_IMPLEMENTATION_PROGRAM.md`)
+**Status:** Foundation (Phase 0) and Governance Core Specification (Phase 1) complete and tagged (`v1.2.1`, `v1.3.0`). ADR-0010 and ADR-0011 are **ratified** by the Owner. Phase 2 (Autonomous Operating Layer — `OWNER_PROFILE.md`, `AUTONOMY_PROTOCOL.md`, `MASTER_IMPLEMENTATION_PROGRAM.md`, `BACKLOG.md`, the Brain/Agent/Skill/Workflow/Tool registries, memory and self-evolution protocols, `work/`) is in review.
 
 ```text
 Governance Core specification: ratified
 Governance Core implementation: not started
+Autonomous Operating Layer: in review
 ```
 
-No Governance API, Policy Engine, Approval Service, capability issuer, audit storage, or kill switch is implemented. These remain design contracts only (`docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md`, `governance/schemas/`) until a separate, explicitly authorized implementation phase begins.
+No Governance API, Policy Engine, Approval Service, capability issuer, audit storage, or kill switch is implemented. No Brain or Agent is activated — every entry in `docs/BRAIN_REGISTRY.md` and `docs/AGENT_REGISTRY.md` is `specified`/`not_implemented`. These remain design contracts only until a separate, explicitly authorized implementation phase begins for each.
 
 ## Approved design direction proposed for ratification
 
@@ -28,7 +29,7 @@ No Governance API, Policy Engine, Approval Service, capability issuer, audit sto
 
 ## Current objective
 
-Governance Core specification is ratified (ADR-0010, ADR-0011); implementation has **not started**. `docs/21_GOVERNANCE_CORE_SPEC.md` through `docs/26_KILL_SWITCH_SPEC.md` and `governance/schemas/` convert the Constitution and Invariant Kernel into reviewable technical contracts (Governance API, Action Classifier, Policy Engine, Approval Service, Capability Payload/Signed Envelope, Audit Events, Kill Switch), and ADR-0011 fixes the concrete MVP parameters (idempotency window, actor authentication, Class C approval TTL, capability envelope format JWS/EdDSA/Ed25519, key custody, capability TTLs, rate limiting, Make.com classification, kill-switch drill cadence, JSON Schema validation library). No backend, database, migration, MCP, model call, connector, or infrastructure was added. Do not implement domain agents yet.
+Define the documentary and operational layer (`AUTONOMY_PROTOCOL.md`, `BACKLOG.md`, `MASTER_IMPLEMENTATION_PROGRAM.md`) that lets Claude select, execute, validate, and deliver authorized work without per-file manual prompts, and specify — without activating — the Brain/Agent/Skill/Workflow architecture the rest of IIOS will be built on (`docs/BRAIN_REGISTRY.md`, `docs/AGENT_REGISTRY.md`, `docs/SKILL_CATALOG.md`, `docs/WORKFLOW_REGISTRY.md`, `docs/TOOL_REGISTRY.md`, `docs/MODEL_ROUTING.md`, `docs/MEMORY_ARCHITECTURE.md`, `docs/SELF_EVOLUTION_PROTOCOL.md`, `docs/HANDOFF_PROTOCOL.md`). No Governance API, Policy Engine, database, Hermes, executable Brain, executable Agent, connector, MCP, secret, or productive infrastructure is implemented. `BACKLOG.md`'s first `ready`-after-this-phase task is `GOV-IMP-001` (Governance Core implementation skeleton), which requires its own separate Owner authorization to begin and must not start on this phase's branch.
 
 ## Foundation acceptance criteria
 

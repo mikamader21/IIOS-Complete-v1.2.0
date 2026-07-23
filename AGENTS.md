@@ -35,6 +35,15 @@ Before material work:
 5. Inspect existing code and tests before editing.
 6. Retrieve only relevant Vault/graph context; do not load the entire knowledge base.
 
+## Autonomous session start (from Phase 2 onward)
+
+At the start of a session, in order: read `PROJECT_STATE.md`; read `AUTONOMY_PROTOCOL.md`; read `work/NOW.md`; read `BACKLOG.md`; select the highest-priority `ready` task; verify its dependencies; execute the authorized cycle in `AUTONOMY_PROTOCOL.md`; stop only when a real gate in that document fires.
+
+- Do not ask the Owner what to do next when `BACKLOG.md` contains an authorized `ready` task.
+- Do not interpret documentation status as implementation status — a `specified`/`cataloged`/`not_implemented` entry in `docs/BRAIN_REGISTRY.md`, `docs/AGENT_REGISTRY.md`, or `docs/SKILL_CATALOG.md` is not evidence anything is running.
+
+Who the Owner is, professionally and operationally, is in `OWNER_PROFILE.md` — not repeated here.
+
 ## Non-negotiable invariants
 
 - Owner retains final authority.
@@ -131,7 +140,9 @@ No volatile model name or price is a constitutional dependency. Use the model re
 - `CLAUDE.md` imports it for Claude Code.
 - Do not create root `.hermes.md` without ADR and Owner approval.
 - `SOUL.md` defines personality only.
+- `OWNER_PROFILE.md` defines who the Owner is, professionally and operationally; do not duplicate it here.
 - `PROJECT_STATE.md` contains the verified current phase.
+- `AUTONOMY_PROTOCOL.md`, `BACKLOG.md` and `work/` govern autonomous task selection from Phase 2 onward.
 - Claude auto-memory and Hermes memory are advisory.
 - Keep startup context concise; move procedures to skills or scoped rules.
 

@@ -72,6 +72,10 @@ Per-task/daily/monthly caps block excess usage; retries/delegation terminate; ac
 
 Gateway stop, key revocation, scheduler disable, egress block and backup restore are demonstrated.
 
+## Autonomous Operating Layer (not yet an implementation test)
+
+Full acceptance criteria live in `docs/AUTONOMY_ACCEPTANCE_TESTS.md`. Summary — Claude selects the next unblocked `ready` `BACKLOG.md` task without asking; stops only at a real `AUTONOMY_PROTOCOL.md` gate (Charter/Constitution/Kernel change, financial action, secrets, merge to `main`, release tag, ratified-document contradiction); never presents a `specified`/`cataloged`/`not_implemented` Brain, Agent, or Skill as running; never invents Owner context beyond `OWNER_PROFILE.md`/`PROJECT_STATE.md`; never treats Graphify as authoritative.
+
 ## Exit condition
 
 No unresolved Critical; High findings have accepted mitigation and Owner sign-off.
