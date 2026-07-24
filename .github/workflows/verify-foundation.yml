@@ -124,9 +124,19 @@ jobs:
         # whole repository including deploy/hermes/ — not repeated here as
         # literal text, since writing those exact prefixes into this file
         # would itself trip that same repo-wide scanner.
+        #
+        # A 64-hex-char sha256:... digest (deliberately pinned in
+        # core/docker-compose.yml.template — docs/ADR/ADR-0013-HERMES-VPS-DEPLOYMENT-MODEL.md)
+        # is >=40 chars and would otherwise match the generic long-token
+        # heuristic below even though it is public, non-secret content by
+        # design — a real image digest is meant to be shared. Lines
+        # containing that exact shape are excluded before the heuristic
+        # runs, so only genuinely unexplained long tokens still fail this
+        # check.
         run: |
           set -euo pipefail
-          if grep -rnEi '(api[_-]?key[[:space:]]*=[[:space:]]*[^<[:space:]<]|[A-Za-z0-9_-]{40,})' deploy/hermes --include=*.template --include=*.example --include=*.json; then
+          if grep -rnEi '(api[_-]?key[[:space:]]*=[[:space:]]*[^<[:space:]<]|[A-Za-z0-9_-]{40,})' deploy/hermes --include=*.template --include=*.example --include=*.json \
+            | grep -vE 'sha256:[0-9a-f]{64}'; then
             echo "Possible real credential shape found in a template/example/manifest file." >&2
             exit 1
           fi
